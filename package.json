@@ -1,0 +1,31 @@
+{
+  "name": "blockchain-evoting",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Diwash234/blockchain-e-voting.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Diwash234/blockchain-e-voting/issues"
+  },
+  "homepage": "https://github.com/Diwash234/blockchain-e-voting#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "ethers": "^6.16.0",
+    "express": "^5.2.1",
+    "ipfs-http-client": "^60.0.1"
+  },
+  "devDependencies": {
+    "hardhat": "^3.1.12"
+  }
+}

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Blockchain E-Voting System</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body{
+background:#f4f6f9;
+font-family:Arial;
+}
+
+header{
+background:#0d6efd;
+color:white;
+padding:30px;
+text-align:center;
+}
+
+.card:hover{
+transform:scale(1.03);
+transition:0.3s;
+}
+
+footer{
+background:#212529;
+color:white;
+padding:15px;
+text-align:center;
+margin-top:40px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+<div class="container">
+
+<a class="navbar-brand">Blockchain E-Voting</a>
+
+<button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
+<span class="navbar-toggler-icon"></span>
+</button>
+
+<div class="collapse navbar-collapse" id="menu">
+
+<ul class="navbar-nav ms-auto">
+
+<li class="nav-item">
+<a class="nav-link" href="#home">Home</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="#vote">Vote</a>
+</li>
+
+<li class="nav-item">
+<a class="nav-link" href="#results">Results</a>
+</li>
+
+</ul>
+
+<button class="btn btn-success ms-3" onclick="connectWallet()">
+Connect Wallet
+</button>
+
+</div>
+
+</div>
+
+</nav>
+
+<!-- HEADER -->
+
+<header>
+
+<h1>Secure Blockchain Voting System</h1>
+
+<p>Transparent • Decentralized • Secure Voting using Ethereum</p>
+
+</header>
+
+<!-- VOTING SECTION -->
+
+<section class="container mt-5" id="vote">
+
+<h2 class="text-center mb-4">Vote Your Candidate</h2>
+
+<div class="row">
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<img src="https://via.placeholder.com/300">
+
+<div class="card-body text-center">
+
+<h5>Candidate A</h5>
+
+<p>Party Alpha</p>
+
+<button class="btn btn-primary" onclick="vote(1)">Vote</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<img src="https://via.placeholder.com/300">
+
+<div class="card-body text-center">
+
+<h5>Candidate B</h5>
+
+<p>Party Beta</p>
+
+<button class="btn btn-primary" onclick="vote(2)">Vote</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card shadow">
+
+<img src="https://via.placeholder.com/300">
+
+<div class="card-body text-center">
+
+<h5>Candidate C</h5>
+
+<p>Party Gamma</p>
+
+<button class="btn btn-primary" onclick="vote(3)">Vote</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- RESULTS -->
+
+<section class="container mt-5" id="results">
+
+<h2 class="text-center mb-4">Live Results</h2>
+
+<table class="table table-bordered text-center">
+
+<thead class="table-dark">
+
+<tr>
+<th>Candidate</th>
+<th>Party</th>
+<th>Votes</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+<td>Candidate A</td>
+<td>Alpha</td>
+<td id="vote1">0</td>
+</tr>
+
+<tr>
+<td>Candidate B</td>
+<td>Beta</td>
+<td id="vote2">0</td>
+</tr>
+
+<tr>
+<td>Candidate C</td>
+<td>Gamma</td>
+<td id="vote3">0</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<footer>
+
+<p>Blockchain E-Voting System | Ethereum • IPFS • ZK-SNARKs</p>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+let votes=[0,0,0];
+
+function vote(id){
+
+votes[id-1]++;
+
+document.getElementById("vote"+id).innerText=votes[id-1];
+
+alert("Vote submitted successfully!");
+
+}
+
+async function connectWallet(){
+
+if(window.ethereum){
+
+await window.ethereum.request({method:"eth_requestAccounts"});
+
+alert("MetaMask Connected");
+
+}else{
+
+alert("Please install MetaMask");
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
