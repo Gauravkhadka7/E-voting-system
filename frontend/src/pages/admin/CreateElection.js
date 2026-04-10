@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../../components/AdminSidebar';
-import axios from 'axios';
+import api from '../../utils/api';
 
 export default function CreateElection() {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function CreateElection() {
         startDate: start.toISOString(),
         endDate: end.toISOString(),
       };
-      const res = await axios.post('/api/elections', payload, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await api.post('/api/elections', payload, { headers: { Authorization: `Bearer ${token}` } });
       setSuccess(`✅ Election "${form.title}" created! Election ID: ${res.data._id}. Users can now vote between the set dates.`);
       setForm({ title: '', description: '', startDate: '', endDate: '', startTime: '08:00', endTime: '18:00' });
     } catch (err) {
@@ -60,12 +60,12 @@ export default function CreateElection() {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label className="form-label">Election Title <span>*</span></label>
-                <input className="form-control" type="text" placeholder="e.g. Presidential Election 2024" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required />
+                <label className="form-label" htmlFor="el-title">Election Title <span>*</span></label>
+                <input className="form-control" type="text" id="el-title" name="title" autoComplete="off" placeholder="e.g. Presidential Election 2024" value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label className="form-label">Description</label>
-                <textarea className="form-control" rows={3} placeholder="Brief description of this election..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
+                <label className="form-label" htmlFor="el-desc">Description</label>
+                <textarea className="form-control" id="el-desc" name="description" autoComplete="off" rows={3} placeholder="Brief description of this election..." value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
               </div>
 
               <div style={{ background: 'rgba(98,126,234,0.05)', border: '1px solid rgba(98,126,234,0.15)', borderRadius: 12, padding: 20, marginBottom: 20 }}>
@@ -74,22 +74,22 @@ export default function CreateElection() {
                 </div>
                 <div className="form-row" style={{ marginBottom: 0 }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Start Date <span>*</span></label>
-                    <input className="form-control" type="date" min={today} value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} required />
+                    <label className="form-label" htmlFor="el-start-date">Start Date <span>*</span></label>
+                    <input id="el-start-date" name="startDate" autoComplete="off" className="form-control" type="date" min={today} value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} required />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Start Time</label>
-                    <input className="form-control" type="time" value={form.startTime} onChange={e => setForm({ ...form, startTime: e.target.value })} />
+                    <label className="form-label" htmlFor="el-start-time">Start Time</label>
+                    <input id="el-start-time" name="startTime" autoComplete="off" className="form-control" type="time" value={form.startTime} onChange={e => setForm({ ...form, startTime: e.target.value })} />
                   </div>
                 </div>
                 <div className="form-row" style={{ marginTop: 14, marginBottom: 0 }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">End Date <span>*</span></label>
-                    <input className="form-control" type="date" min={form.startDate || today} value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} required />
+                    <label className="form-label" htmlFor="el-end-date">End Date <span>*</span></label>
+                    <input id="el-end-date" name="endDate" autoComplete="off" className="form-control" type="date" min={form.startDate || today} value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} required />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">End Time</label>
-                    <input className="form-control" type="time" value={form.endTime} onChange={e => setForm({ ...form, endTime: e.target.value })} />
+                    <label className="form-label" htmlFor="el-end-time">End Time</label>
+                    <input id="el-end-time" name="endTime" autoComplete="off" className="form-control" type="time" value={form.endTime} onChange={e => setForm({ ...form, endTime: e.target.value })} />
                   </div>
                 </div>
               </div>

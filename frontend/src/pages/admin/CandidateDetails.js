@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/AdminSidebar';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 
 export default function CandidateDetails() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function CandidateDetails() {
 
   const fetchCandidates = () => {
     setLoading(true);
-    axios.get('/api/candidates', { headers: { Authorization: `Bearer ${token()}` } })
+    api.get('/api/candidates', { headers: { Authorization: `Bearer ${token()}` } })
       .then(res => setCandidates(res.data))
       .catch(() => setCandidates([
         { _id: '1', name: 'Alice Kumar', party: 'Progressive Alliance', electionTitle: 'Presidential 2024', age: 45, qualification: 'MBA', imageUrl: '', voteCount: 124, status: 'active' },
@@ -37,7 +37,7 @@ export default function CandidateDetails() {
   const saveEdit = async () => {
     setSaving(true); setMsg('');
     try {
-      await axios.put(`/api/candidates/${editModal._id}`, editForm, { headers: { Authorization: `Bearer ${token()}` } });
+      await api.put(`/api/candidates/${editModal._id}`, editForm, { headers: { Authorization: `Bearer ${token()}` } });
       setMsg('✅ Candidate updated successfully!');
       fetchCandidates();
       setTimeout(() => { setEditModal(null); setMsg(''); }, 1500);
@@ -48,7 +48,7 @@ export default function CandidateDetails() {
   const deleteCandidate = async (id, name) => {
     if (!window.confirm(`Delete candidate "${name}"? This cannot be undone.`)) return;
     try {
-      await axios.delete(`/api/candidates/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
+      await api.delete(`/api/candidates/${id}`, { headers: { Authorization: `Bearer ${token()}` } });
       fetchCandidates();
     } catch { alert('Delete failed.'); }
   };
@@ -68,7 +68,7 @@ export default function CandidateDetails() {
             <div className="topbar-sub">View and update all candidates across elections</div>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
-            <input className="form-control" style={{ width: 200 }} placeholder="🔍 Search candidates..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input className="form-control" style={{ width: 200 }} id="cd-search" name="search" autoComplete="off" placeholder="🔍 Search candidates..." value={search} onChange={e => setSearch(e.target.value)} />
             <button className="btn btn-primary btn-sm" onClick={() => navigate('/admin/add-candidate')}>+ Add Candidate</button>
           </div>
         </div>
@@ -123,27 +123,27 @@ export default function CandidateDetails() {
               {msg && <div className={`alert ${msg.includes('✅') ? 'alert-success' : 'alert-error'}`}>{msg}</div>}
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Full Name</label>
-                  <input className="form-control" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+                  <label className="form-label" htmlFor="cd-edit-name">Full Name</label>
+                  <input id="cd-edit-name" autoComplete="off" name="name" className="form-control" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Party</label>
-                  <input className="form-control" value={editForm.party} onChange={e => setEditForm({ ...editForm, party: e.target.value })} />
+                  <label className="form-label" htmlFor="cd-edit-party">Party</label>
+                  <input id="cd-edit-party" autoComplete="off" name="party" className="form-control" value={editForm.party} onChange={e => setEditForm({ ...editForm, party: e.target.value })} />
                 </div>
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Age</label>
-                  <input className="form-control" type="number" value={editForm.age} onChange={e => setEditForm({ ...editForm, age: e.target.value })} />
+                  <label className="form-label" htmlFor="cd-edit-age">Age</label>
+                  <input id="cd-edit-age" autoComplete="off" name="age" className="form-control" type="number" value={editForm.age} onChange={e => setEditForm({ ...editForm, age: e.target.value })} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Qualification</label>
-                  <input className="form-control" value={editForm.qualification} onChange={e => setEditForm({ ...editForm, qualification: e.target.value })} />
+                  <label className="form-label" htmlFor="cd-edit-qual">Qualification</label>
+                  <input id="cd-edit-qual" autoComplete="off" name="qualification" className="form-control" value={editForm.qualification} onChange={e => setEditForm({ ...editForm, qualification: e.target.value })} />
                 </div>
               </div>
               <div className="form-group">
-                <label className="form-label">Bio</label>
-                <textarea className="form-control" rows={3} value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} />
+                <label className="form-label" htmlFor="cd-edit-bio">Bio</label>
+                <textarea id="cd-edit-bio" autoComplete="off" name="bio" className="form-control" rows={3} value={editForm.bio} onChange={e => setEditForm({ ...editForm, bio: e.target.value })} />
               </div>
               <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
                 <button className={`btn btn-primary btn-full ${saving ? 'btn-loading' : ''}`} onClick={saveEdit} disabled={saving}>

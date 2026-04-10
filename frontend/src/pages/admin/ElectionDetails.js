@@ -1,9 +1,17 @@
-import React, { useState, useEffect, } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminSidebar from '../../components/AdminSidebar';
-
-import axios from 'axios';
+import api from '../../utils/api';
 
 export default function ElectionDetails() {
+  // Live status from dates
+  const computeStatus = (startDate, endDate) => {
+    const now = new Date();
+    if (!startDate || !endDate) return 'unknown';
+    if (now < new Date(startDate)) return 'upcoming';
+    if (now > new Date(endDate))   return 'completed';
+    return 'active';
+  };
+
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editModal, setEditModal] = useState(null);
@@ -15,7 +23,7 @@ export default function ElectionDetails() {
 
   const fetchElections = () => {
     setLoading(true);
-    axios.get('/api/elections', { headers: { Authorization: `Bearer ${token()}` } })
+    api.get('/api/elections', { headers: { Authorization: `Bearer ${token()}` } })
       .then(res => setElections(res.data))
       .catch(() => setElections([
         { _id: '1', title: 'Presidential Election 2024', description: 'National presidential election', status: 'active', startDate: '2024-12-01T08:00:00Z', endDate: '2024-12-15T18:00:00Z', totalVotes: 186, candidateCount: 3 },
@@ -45,7 +53,7 @@ export default function ElectionDetails() {
     const end   = new Date(`${editForm.endDate}T${editForm.endTime}`);
     if (end <= start) { setMsg('❌ End date must be after start date.'); setSaving(false); return; }
     try {
-      await axios.put(`/api/elections/${editModal._id}`, {
+      await api.put(`/api/elections/${editModal._id}`, {
         title: editForm.title,
         description: editForm.description,
         startDate: start.toISOString(),
@@ -84,7 +92,7 @@ export default function ElectionDetails() {
             {elections.map(el => (
               <div key={el._id} className="card" style={{ position: 'relative', overflow: 'hidden' }}>
                 {/* Status stripe */}
-                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: el.status === 'active' ? 'var(--green)' : el.status === 'upcoming' ? 'var(--eth)' : 'var(--muted)' }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 4, background: computeStatus(el.startDate, el.endDate) === 'active' ? 'var(--green)' : computeStatus(el.startDate, el.endDate) === 'upcoming' ? 'var(--eth)' : 'var(--muted)' }} />
                 <div style={{ paddingLeft: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 14 }}>
                     <div>
@@ -126,33 +134,33 @@ export default function ElectionDetails() {
               <div className="modal-title">Edit Election</div>
               {msg && <div className={`alert ${msg.includes('✅') ? 'alert-success' : 'alert-error'}`}>{msg}</div>}
               <div className="form-group">
-                <label className="form-label">Title</label>
-                <input className="form-control" value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} />
+                <label className="form-label" htmlFor="ed-title">Title</label>
+                <input id="ed-title" name="title" autoComplete="off" className="form-control" value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} />
               </div>
               <div className="form-group">
-                <label className="form-label">Description</label>
-                <textarea className="form-control" rows={2} value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} />
+                <label className="form-label" htmlFor="ed-desc">Description</label>
+                <textarea id="ed-desc" name="description" autoComplete="off" className="form-control" rows={2} value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} />
               </div>
               <div style={{ background: 'rgba(98,126,234,0.05)', border: '1px solid rgba(98,126,234,0.15)', borderRadius: 10, padding: 16, marginBottom: 16 }}>
                 <div style={{ fontSize: '.8rem', fontWeight: 700, color: 'var(--eth)', marginBottom: 12 }}>📅 Update Voting Window</div>
                 <div className="form-row">
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Start Date</label>
-                    <input className="form-control" type="date" value={editForm.startDate} onChange={e => setEditForm({ ...editForm, startDate: e.target.value })} />
+                    <label className="form-label" htmlFor="ed-start-date">Start Date</label>
+                    <input id="ed-start-date" name="startDate" autoComplete="off" className="form-control" type="date" value={editForm.startDate} onChange={e => setEditForm({ ...editForm, startDate: e.target.value })} />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">Start Time</label>
-                    <input className="form-control" type="time" value={editForm.startTime} onChange={e => setEditForm({ ...editForm, startTime: e.target.value })} />
+                    <label className="form-label" htmlFor="ed-start-time">Start Time</label>
+                    <input id="ed-start-time" name="startTime" autoComplete="off" className="form-control" type="time" value={editForm.startTime} onChange={e => setEditForm({ ...editForm, startTime: e.target.value })} />
                   </div>
                 </div>
                 <div className="form-row" style={{ marginTop: 12, marginBottom: 0 }}>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">End Date</label>
-                    <input className="form-control" type="date" value={editForm.endDate} onChange={e => setEditForm({ ...editForm, endDate: e.target.value })} />
+                    <label className="form-label" htmlFor="ed-end-date">End Date</label>
+                    <input id="ed-end-date" name="endDate" autoComplete="off" className="form-control" type="date" value={editForm.endDate} onChange={e => setEditForm({ ...editForm, endDate: e.target.value })} />
                   </div>
                   <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label">End Time</label>
-                    <input className="form-control" type="time" value={editForm.endTime} onChange={e => setEditForm({ ...editForm, endTime: e.target.value })} />
+                    <label className="form-label" htmlFor="ed-end-time">End Time</label>
+                    <input id="ed-end-time" name="endTime" autoComplete="off" className="form-control" type="time" value={editForm.endTime} onChange={e => setEditForm({ ...editForm, endTime: e.target.value })} />
                   </div>
                 </div>
               </div>

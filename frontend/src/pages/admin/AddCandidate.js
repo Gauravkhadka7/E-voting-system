@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminSidebar from '../../components/AdminSidebar';
-import axios from 'axios';
+import api from '../../utils/api';
 
 export default function AddCandidate() {
   const navigate = useNavigate();
@@ -26,10 +26,10 @@ export default function AddCandidate() {
   const token = localStorage.getItem('adminToken');
 
   useEffect(() => {
-    axios.get('/api/elections', { headers:{ Authorization:`Bearer ${token}` } })
+    api.get('/api/elections', { headers:{ Authorization:`Bearer ${token}` } })
       .then(r => setElections(r.data))
       .catch(() => setElections([{ _id:'demo', title:'Presidential Election 2024' }]));
-  }, [token]);
+  }, []);
 
   // ── Image handling ──────────────────────────────────────────
   const processImage = file => {
@@ -62,7 +62,7 @@ export default function AddCandidate() {
     setOtpSent(false); setOtpCode(''); setDevCode('');
     setOtpLoading(true);
     try {
-      const res = await axios.post('/api/auth/admin/request-otp', {
+      const res = await api.post('/api/auth/admin/request-otp', {
         action: `Add Candidate: ${form.name}`,
         details: `Party: ${form.party} | Election: ${elections.find(e=>e._id===form.electionId)?.title || form.electionId}`,
       }, { headers:{ Authorization:`Bearer ${token}` } });
@@ -82,7 +82,7 @@ export default function AddCandidate() {
       formData.append('image', imageFile);
       formData.append('adminOTP', otpCode);
 
-      const res = await axios.post('/api/candidates', formData, {
+      const res = await api.post('/api/candidates', formData, {
         headers: { Authorization:`Bearer ${token}`, 'Content-Type':'multipart/form-data' },
       });
       setSuccess(`✅ Candidate "${form.name}" added! IPFS CID: ${res.data._cid}`);
@@ -115,8 +115,8 @@ export default function AddCandidate() {
 
             <form onSubmit={handleSubmitForm}>
               <div className="form-group">
-                <label className="form-label">Election <span>*</span></label>
-                <select className="form-control" value={form.electionId} onChange={e=>setForm({...form,electionId:e.target.value})} required>
+                <label className="form-label" htmlFor="cand-election">Election <span>*</span></label>
+                <select id="cand-election" name="electionId" className="form-control" value={form.electionId} onChange={e=>setForm({...form,electionId:e.target.value})} required>
                   <option value="">— Select Election —</option>
                   {elections.map(el=><option key={el._id} value={el._id}>{el.title}</option>)}
                 </select>
@@ -124,34 +124,34 @@ export default function AddCandidate() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Full Name <span>*</span></label>
-                  <input className="form-control" type="text" placeholder="Candidate full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required />
+                  <label className="form-label" htmlFor="cand-name">Full Name <span>*</span></label>
+                  <input className="form-control" type="text" id="cand-name" name="name" autoComplete="off" placeholder="Candidate full name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Party Name <span>*</span></label>
-                  <input className="form-control" type="text" placeholder="Political party" value={form.party} onChange={e=>setForm({...form,party:e.target.value})} required />
+                  <label className="form-label" htmlFor="cand-party">Party Name <span>*</span></label>
+                  <input className="form-control" type="text" id="cand-party" name="party" autoComplete="organization" placeholder="Political party" value={form.party} onChange={e=>setForm({...form,party:e.target.value})} required />
                 </div>
               </div>
 
               <div className="form-row">
                 <div className="form-group">
-                  <label className="form-label">Age</label>
-                  <input className="form-control" type="number" min="21" max="99" placeholder="Age" value={form.age} onChange={e=>setForm({...form,age:e.target.value})} />
+                  <label className="form-label" htmlFor="cand-age">Age</label>
+                  <input className="form-control" type="number" min="21" max="99" id="cand-age" name="age" autoComplete="off" placeholder="Age" value={form.age} onChange={e=>setForm({...form,age:e.target.value})} />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Qualification</label>
-                  <input className="form-control" type="text" placeholder="e.g. MSc Computer Science" value={form.qualification} onChange={e=>setForm({...form,qualification:e.target.value})} />
+                  <label className="form-label" htmlFor="cand-qual">Qualification</label>
+                  <input className="form-control" type="text" id="cand-qual" name="qualification" autoComplete="off" placeholder="e.g. MSc Computer Science" value={form.qualification} onChange={e=>setForm({...form,qualification:e.target.value})} />
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Bio / Manifesto</label>
-                <textarea className="form-control" rows={3} placeholder="Candidate bio and election manifesto..." value={form.bio} onChange={e=>setForm({...form,bio:e.target.value})} />
+                <label className="form-label" htmlFor="cand-bio">Bio / Manifesto</label>
+                <textarea className="form-control" rows={3} id="cand-bio" name="bio" placeholder="Candidate bio and election manifesto..." value={form.bio} onChange={e=>setForm({...form,bio:e.target.value})} />
               </div>
 
               {/* ── Photo upload ── */}
               <div className="form-group">
-                <label className="form-label">Candidate Photo <span>*</span></label>
+                <label className="form-label" htmlFor="cand-photo">Candidate Photo <span>*</span></label>
                 <div
                   onDragOver={e=>{e.preventDefault();setDragging(true)}}
                   onDragLeave={()=>setDragging(false)}
@@ -179,7 +179,7 @@ export default function AddCandidate() {
                     </>
                   )}
                 </div>
-                <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={e=>processImage(e.target.files[0])} />
+                <input ref={fileRef} id="cand-photo" name="photo" type="file" accept="image/*" autoComplete="off" style={{display:'none'}} onChange={e=>processImage(e.target.files[0])} />
                 {!imageFile && <div className="form-hint" style={{color:'var(--red)'}}>Photo is required for the candidate card</div>}
               </div>
 
@@ -243,13 +243,13 @@ export default function AddCandidate() {
               {error && <div className="alert alert-error">⚠ {error}</div>}
 
               <div className="form-group">
-                <label className="form-label">6-Digit Confirmation Code</label>
+                <label className="form-label" htmlFor="admin-otp">6-Digit Confirmation Code</label>
                 <input
                   className="form-control"
                   type="text"
                   inputMode="numeric"
                   maxLength={6}
-                  placeholder="Enter code from email"
+                  id="admin-otp" name="adminOTP" placeholder="Enter code from email"
                   value={otpCode}
                   onChange={e=>setOtpCode(e.target.value.replace(/\D/g,'').slice(0,6))}
                   style={{textAlign:'center',fontSize:'1.5rem',fontFamily:'var(--font-mono)',letterSpacing:8}}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 
 // Party banner images (Unsplash free)
 const PARTY_IMAGES = {
@@ -19,7 +19,7 @@ function LiveResultsWidget({ electionId }) {
     if (!electionId) return;
     const fetch = async () => {
       try {
-        const res = await axios.get(`/api/vote/results/${electionId}`);
+        const res = await api.get(`/api/vote/results/${electionId}`);
         setResults(res.data);
       } catch {}
     };
@@ -73,6 +73,14 @@ function LiveResultsWidget({ electionId }) {
 }
 
 export default function UserDashboard() {
+  const computeStatus = (startDate, endDate) => {
+    const now = new Date();
+    if (!startDate || !endDate) return 'unknown';
+    if (now < new Date(startDate)) return 'upcoming';
+    if (now > new Date(endDate))   return 'completed';
+    return 'active';
+  };
+
   const navigate  = useNavigate();
   const [candidates, setCandidates] = useState([]);
   const [elections,  setElections]  = useState([]);
@@ -89,9 +97,9 @@ export default function UserDashboard() {
 
   useEffect(() => {
     Promise.all([
-      axios.get('/api/candidates/public'),
-      axios.get('/api/elections/active'),
-      axios.get('/api/voter/status', { headers:{ Authorization:`Bearer ${token}` } }),
+      api.get('/api/candidates/public'),
+      api.get('/api/elections/active'),
+      api.get('/api/voter/status', { headers:{ Authorization:`Bearer ${token}` } }),
     ]).then(([cRes, elRes, sRes]) => {
       setCandidates(cRes.data);
       const actives = Array.isArray(elRes.data) ? elRes.data : [elRes.data];

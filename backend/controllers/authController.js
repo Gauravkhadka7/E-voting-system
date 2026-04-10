@@ -1,6 +1,6 @@
-const jwt   = require('jsonwebtoken');
+const jwt    = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const db    = require('../services/ipfsDB');
+const db     = require('../services/ipfsDB');
 const { sendUserVerification, sendAdminOTP, verifyOTP, verifyAdminOTP: verifyAdminCode } = require('../services/emailService');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'blockvote_secret_2024';
@@ -11,23 +11,26 @@ const ADMIN_PASS = process.env.ADMIN_PASSWORD || 'admin123';
 exports.adminLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!username || !password)
+      return res.status(400).json({ message: 'Username and password required' });
     if (username !== ADMIN_USER || password !== ADMIN_PASS)
-      return res.status(401).json({ message: 'Invalid admin credentials' });
+      return res.status(401).json({ message: `Invalid credentials. Use: ${ADMIN_USER} / ${ADMIN_PASS}` });
     const token = jwt.sign({ role: 'admin', username }, JWT_SECRET, { expiresIn: '8h' });
     res.json({ token, admin: { username, role: 'admin' } });
-  } catch { res.status(500).json({ message: 'Server error' }); }
+  } catch (err) {
+    console.error('adminLogin error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
 
-// ── Request admin OTP (before sensitive actions) ─────────────
+// ── Request admin OTP ────────────────────────────────────────
 exports.requestAdminOTP = async (req, res) => {
   try {
     const { action, details } = req.body;
     const code = await sendAdminOTP(action || 'Admin Action', details || '');
     const emailConfigured = !!process.env.EMAIL_USER;
     res.json({
-      message: emailConfigured
-        ? 'Confirmation code sent to admin email'
-        : `Dev mode — use code: ${code}`,
+      message: emailConfigured ? 'Code sent to admin email' : `Dev mode — use code: ${code}`,
       devMode: !emailConfigured,
       devCode: !emailConfigured ? code : undefined,
     });
@@ -44,54 +47,75 @@ exports.verifyAdminOTP = async (req, res) => {
   res.json({ valid: true });
 };
 
-// ── User Register — send email OTP ──────────────────────────
+// ── User Register ────────────────────────────────────────────
 exports.userRegister = async (req, res) => {
   try {
     const { name, email, password, phone } = req.body;
     if (!name || !email || !password)
       return res.status(400).json({ message: 'Name, email and password are required' });
 
+    // Check if already registered and verified
     const existing = await db.findOne('users', u => u.email === email.toLowerCase());
     if (existing && existing.verified)
       return res.status(409).json({ message: 'Email already registered. Please sign in.' });
 
     const hash = await bcrypt.hash(password, 12);
-    let userId;
+    const emailConfigured = !!process.env.EMAIL_USER;
 
+    // In DEV MODE (no email) — auto-verify so users can log in immediately
+    const autoVerify = !emailConfigured;
+
+    let userId;
     if (existing && !existing.verified) {
-      // Update existing unverified record
-      await db.update('users', existing._id, { name, password: hash, phone: phone || '' });
+      await db.update('users', existing._id, {
+        name, password: hash, phone: phone || '',
+        verified: autoVerify,
+      });
       userId = existing._id;
     } else {
       const user = await db.insert('users', {
-        name, email: email.toLowerCase(), password: hash, phone: phone || '',
-        isRegistered: false, hasVoted: false, walletAddress: '', verified: false,
+        name,
+        email: email.toLowerCase(),
+        password: hash,
+        phone: phone || '',
+        isRegistered: false,
+        hasVoted: false,
+        walletAddress: '',
+        verified: autoVerify, // auto-verify if no email configured
       });
       userId = user._id;
     }
 
-    // Send verification email
-    let emailSent = false;
+    // Try to send verification email
     let devCode;
-    try {
-      const code = await sendUserVerification(email, name);
-      emailSent = !!process.env.EMAIL_USER;
-      if (!emailSent) devCode = code;
-    } catch (e) {
-      console.warn('Email send error:', e.message);
+    if (emailConfigured) {
+      try {
+        await sendUserVerification(email, name);
+      } catch (e) {
+        console.warn('Email send failed:', e.message);
+      }
+      return res.status(201).json({
+        message: `Verification code sent to ${email}. Check your inbox.`,
+        userId,
+        emailSent: true,
+        requiresVerification: true,
+      });
+    } else {
+      // DEV MODE — no email needed, generate OTP just for display
+      const code = await sendUserVerification(email, name); // prints to console
+      devCode = code;
+      return res.status(201).json({
+        message: `Account created successfully! Dev mode — you can log in directly.`,
+        userId,
+        emailSent: false,
+        requiresVerification: false,
+        devCode,
+        devNote: 'Email not configured — account auto-verified. Check terminal for OTP.',
+      });
     }
-
-    res.status(201).json({
-      message: emailSent
-        ? `Verification code sent to ${email}`
-        : `Account created. Dev mode — verification code: ${devCode}`,
-      userId,
-      emailSent,
-      devCode: !emailSent ? devCode : undefined,
-    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Registration failed.' });
+    console.error('userRegister error:', err);
+    res.status(500).json({ message: 'Registration failed: ' + err.message });
   }
 };
 
@@ -101,12 +125,13 @@ exports.verifyEmail = async (req, res) => {
     const { email, code } = req.body;
     const result = verifyOTP(email, code);
     if (!result.valid) return res.status(400).json({ message: result.reason });
-
     const user = await db.findOne('users', u => u.email === email.toLowerCase());
     if (!user) return res.status(404).json({ message: 'Account not found' });
     await db.update('users', user._id, { verified: true });
     res.json({ message: '✅ Email verified! You can now sign in.', verified: true });
-  } catch { res.status(500).json({ message: 'Verification failed' }); }
+  } catch (err) {
+    res.status(500).json({ message: 'Verification failed: ' + err.message });
+  }
 };
 
 // ── Resend OTP ───────────────────────────────────────────────
@@ -115,13 +140,15 @@ exports.resendOTP = async (req, res) => {
     const { email } = req.body;
     const user = await db.findOne('users', u => u.email === email.toLowerCase());
     if (!user) return res.status(404).json({ message: 'No account found' });
-    if (user.verified) return res.json({ message: 'Email already verified' });
+    if (user.verified) return res.json({ message: 'Email already verified. You can log in.' });
     const code = await sendUserVerification(email, user.name);
     res.json({
       message: process.env.EMAIL_USER ? `New code sent to ${email}` : `Dev code: ${code}`,
       devCode: !process.env.EMAIL_USER ? code : undefined,
     });
-  } catch { res.status(500).json({ message: 'Resend failed' }); }
+  } catch (err) {
+    res.status(500).json({ message: 'Resend failed: ' + err.message });
+  }
 };
 
 // ── User Login ───────────────────────────────────────────────
@@ -130,16 +157,39 @@ exports.userLogin = async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password)
       return res.status(400).json({ message: 'Email and password required' });
+
     const user = await db.findOne('users', u => u.email === email.toLowerCase());
-    if (!user)  return res.status(401).json({ message: 'No account found with this email' });
-    if (!user.verified)
-      return res.status(403).json({ message: 'Please verify your email first.', needsVerification: true, email });
+    if (!user)
+      return res.status(401).json({ message: 'No account found with this email. Please sign up first.' });
+
+    // In dev mode accounts are auto-verified, skip verification check
+    if (!user.verified && process.env.EMAIL_USER) {
+      return res.status(403).json({
+        message: 'Please verify your email first. Check your inbox.',
+        needsVerification: true,
+        email,
+      });
+    }
+
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return res.status(401).json({ message: 'Invalid password' });
+    if (!valid)
+      return res.status(401).json({ message: 'Incorrect password. Please try again.' });
+
     const token = jwt.sign({ userId: user._id, role: 'user' }, JWT_SECRET, { expiresIn: '24h' });
     res.json({
       token,
-      user: { _id: user._id, name: user.name, email: user.email, phone: user.phone, isRegistered: user.isRegistered, hasVoted: user.hasVoted, walletAddress: user.walletAddress },
+      user: {
+        _id:          user._id,
+        name:         user.name,
+        email:        user.email,
+        phone:        user.phone,
+        isRegistered: user.isRegistered,
+        hasVoted:     user.hasVoted,
+        walletAddress:user.walletAddress,
+      },
     });
-  } catch { res.status(500).json({ message: 'Login failed' }); }
+  } catch (err) {
+    console.error('userLogin error:', err);
+    res.status(500).json({ message: 'Login failed: ' + err.message });
+  }
 };

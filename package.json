@@ -1,7 +1,7 @@
 {
   "name": "blockchain-evoting",
   "version": "1.0.0",
-  "description": "",
+  "description": "> **Final Year Project** — Decentralized Electronic Voting on Ethereum with ZK-SNARKs, IPFS, and MetaMask",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -26,6 +26,6 @@
     "ipfs-http-client": "^60.0.1"
   },
   "devDependencies": {
-    "hardhat": "^3.1.12"
+    "hardhat": "^3.2.0"
   }
 }

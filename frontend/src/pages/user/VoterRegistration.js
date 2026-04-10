@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 
 export default function VoterRegistration() {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ export default function VoterRegistration() {
       Object.keys(form).forEach(k => formData.append(k, form[k]));
       if (idDoc) formData.append('idDocument', idDoc);
 
-      await axios.post('/api/voter/register', formData, {
+      await api.post('/api/voter/register', formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
       setSuccess('✅ Voter registration successful! You can now cast your vote.');
@@ -100,24 +100,24 @@ export default function VoterRegistration() {
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">Full Name</label>
-                <input className="form-control" value={userInfo.name || ''} disabled />
+                <label className="form-label" htmlFor="vr-name">Full Name</label>
+                <input id="vr-name" name="name" className="form-control" value={userInfo.name || ''} disabled />
                 <div className="form-hint">From your registered account</div>
               </div>
               <div className="form-group">
-                <label className="form-label">Email</label>
-                <input className="form-control" value={userInfo.email || ''} disabled />
+                <label className="form-label" htmlFor="vr-email">Email</label>
+                <input id="vr-email" name="email" className="form-control" value={userInfo.email || ''} disabled />
               </div>
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">Date of Birth <span>*</span></label>
-                <input className="form-control" type="date" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })} max={new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000).toISOString().split('T')[0]} required />
+                <label className="form-label" htmlFor="vr-dob">Date of Birth <span>*</span></label>
+                <input className="form-control" id="vr-dob" name="dob" type="date" autoComplete="bday" value={form.dob} onChange={e => setForm({ ...form, dob: e.target.value })} max={new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000).toISOString().split('T')[0]} required />
                 <div className="form-hint">Must be 18+ to vote</div>
               </div>
               <div className="form-group">
-                <label className="form-label">Gender <span>*</span></label>
-                <select className="form-control" value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} required>
+                <label className="form-label" htmlFor="vr-gender">Gender <span>*</span></label>
+                <select id="vr-gender" name="gender" className="form-control" value={form.gender} onChange={e => setForm({ ...form, gender: e.target.value })} required>
                   <option value="">— Select —</option>
                   <option>Male</option>
                   <option>Female</option>
@@ -135,22 +135,22 @@ export default function VoterRegistration() {
               Residential Address
             </div>
             <div className="form-group">
-              <label className="form-label">Street Address <span>*</span></label>
-              <input className="form-control" type="text" placeholder="House/Flat No, Street Name" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} required />
+              <label className="form-label" htmlFor="vr-address">Street Address <span>*</span></label>
+              <input className="form-control" id="vr-address" name="address" type="text" autoComplete="street-address" placeholder="House/Flat No, Street Name" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} required />
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">City <span>*</span></label>
-                <input className="form-control" type="text" placeholder="City" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} required />
+                <label className="form-label" htmlFor="vr-city">City <span>*</span></label>
+                <input className="form-control" id="vr-city" name="city" type="text" autoComplete="address-level2" placeholder="City" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label className="form-label">State / Province</label>
-                <input className="form-control" type="text" placeholder="State" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
+                <label className="form-label" htmlFor="vr-state">State / Province</label>
+                <input className="form-control" id="vr-state" name="state" type="text" autoComplete="address-level1" placeholder="State" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
               </div>
             </div>
             <div className="form-group" style={{ maxWidth: 200 }}>
-              <label className="form-label">Postal Code</label>
-              <input className="form-control" type="text" placeholder="PIN / ZIP" value={form.pincode} onChange={e => setForm({ ...form, pincode: e.target.value })} />
+              <label className="form-label" htmlFor="vr-pincode">Postal Code</label>
+              <input className="form-control" id="vr-pincode" name="pincode" type="text" autoComplete="postal-code" placeholder="PIN / ZIP" value={form.pincode} onChange={e => setForm({ ...form, pincode: e.target.value })} />
             </div>
           </div>
 
@@ -162,14 +162,14 @@ export default function VoterRegistration() {
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label className="form-label">ID Type <span>*</span></label>
-                <select className="form-control" value={form.idType} onChange={e => setForm({ ...form, idType: e.target.value })} required>
+                <label className="form-label" htmlFor="vr-idType">ID Type <span>*</span></label>
+                <select id="vr-idType" name="idType" className="form-control" value={form.idType} onChange={e => setForm({ ...form, idType: e.target.value })} required>
                   {idTypes.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label className="form-label">ID Number <span>*</span></label>
-                <input className="form-control" type="text" placeholder="Enter ID number" value={form.idNumber} onChange={e => setForm({ ...form, idNumber: e.target.value })} required />
+                <label className="form-label" htmlFor="vr-idNumber">ID Number <span>*</span></label>
+                <input className="form-control" id="vr-idNumber" name="idNumber" type="text" autoComplete="off" placeholder="Enter ID number" value={form.idNumber} onChange={e => setForm({ ...form, idNumber: e.target.value })} required />
               </div>
             </div>
             {/* ID document upload */}
@@ -204,8 +204,8 @@ export default function VoterRegistration() {
               MetaMask Wallet
             </div>
             <div className="form-group" style={{ marginBottom: 8 }}>
-              <label className="form-label">Ethereum Wallet Address <span>*</span></label>
-              <input className="form-control" type="text" placeholder="0x..." value={form.walletAddress} onChange={e => setForm({ ...form, walletAddress: e.target.value })} style={{ fontFamily: 'var(--font-mono)', fontSize: '.85rem' }} />
+              <label className="form-label" htmlFor="vr-wallet">Ethereum Wallet Address <span>*</span></label>
+              <input className="form-control" id="vr-wallet" name="walletAddress" type="text" autoComplete="off" placeholder="0x..." value={form.walletAddress} onChange={e => setForm({ ...form, walletAddress: e.target.value })} style={{ fontFamily: 'var(--font-mono)', fontSize: '.85rem' }} />
               <div className="form-hint">Your MetaMask address — used to sign your vote on-chain</div>
             </div>
             <button

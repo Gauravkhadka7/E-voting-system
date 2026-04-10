@@ -1,0 +1,173 @@
+# ═══════════════════════════════════════════════════════════════
+# BlockVote — IPFS Database Setup & Terminal Commands
+# Database: IPFS (Pinata) — NO MongoDB required
+# ═══════════════════════════════════════════════════════════════
+
+# ════════════════════════════════════════════
+# STEP 1 — Get Pinata API Keys (free)
+# ════════════════════════════════════════════
+
+# 1. Go to https://pinata.cloud and sign up for FREE
+# 2. Dashboard → API Keys → New Key
+# 3. Enable: pinFileToIPFS, pinJSONToIPFS, pinList
+# 4. Copy API Key and Secret
+
+# ════════════════════════════════════════════
+# STEP 2 — Backend Setup
+# ════════════════════════════════════════════
+
+cd blockchain-evoting/backend
+
+# Install dependencies (NO mongoose needed)
+npm install
+
+# Setup environment
+cp .env.example .env
+
+# Edit .env — fill in:
+#   PINATA_API_KEY=<your key>
+#   PINATA_SECRET=<your secret>
+#   JWT_SECRET=blockvote_secret_2024
+#   ADMIN_USERNAME=admin
+#   ADMIN_PASSWORD=admin123
+
+# NOTE: Without Pinata keys, data is saved locally to /db/*.json
+# This still works for demo — just not globally distributed
+
+# ════════════════════════════════════════════
+# STEP 3 — Start Ganache (Terminal 1)
+# ════════════════════════════════════════════
+
+npx ganache \
+  --port 8545 \
+  --deterministic \
+  --accounts 10 \
+  --networkId 1337
+
+# KEEP THIS TERMINAL OPEN
+
+# ════════════════════════════════════════════
+# STEP 4 — Deploy Smart Contracts (Terminal 2, once)
+# ════════════════════════════════════════════
+
+cd blockchain-evoting
+npx hardhat compile
+npx hardhat run blockchain/scripts/deploy.js --network localhost
+# Copy contract address to backend/.env → CONTRACT_ADDRESS=0x...
+
+# ════════════════════════════════════════════
+# STEP 5 — Start Backend (Terminal 3)
+# ════════════════════════════════════════════
+
+cd backend
+npm run dev
+
+# Expected output (with Pinata):
+#   ✅ IPFS DB initialized
+#      Users:      0
+#      Elections:  0
+#      Candidates: 0
+#      Voters:     0
+#      Votes:      0
+#      Pinata:     ✅ connected (real IPFS)
+#   🚀 BlockVote API running on http://localhost:5000
+#      Database: IPFS (Pinata + local cache)
+
+# Expected output (without Pinata — dev mode):
+#   ✅ IPFS DB initialized
+#      Pinata:     ⚠  not configured (using local IPFS cache)
+#   🚀 BlockVote API running on http://localhost:5000
+
+# ════════════════════════════════════════════
+# STEP 6 — Start Frontend (Terminal 4)
+# ════════════════════════════════════════════
+
+cd frontend
+npm start
+# Open http://localhost:3000
+
+# ════════════════════════════════════════════
+# HOW IPFS STORAGE WORKS IN THIS PROJECT
+# ════════════════════════════════════════════
+
+# Every record gets its own IPFS CID:
+#
+# User signup →         POST /api/auth/user/register
+#   → User JSON pinned to IPFS
+#   → CID saved in db/index.json
+#   → Console: 📌 User saved to IPFS — CID: Qm...
+#
+# Create election →     POST /api/elections
+#   → Election JSON pinned to IPFS
+#   → Console: 📌 Election stored on IPFS — CID: Qm...
+#
+# Add candidate →       POST /api/candidates  (with photo)
+#   → Photo file pinned to IPFS  →  imageCid: Qm...
+#   → Metadata JSON pinned separately  →  _cid: Qm...
+#   → Console: 📌 Candidate photo stored on IPFS — CID: Qm...
+#   → Console: 📌 Candidate metadata stored on IPFS — CID: Qm...
+#
+# Voter registration →  POST /api/voter/register  (with ID doc)
+#   → ID document file pinned to IPFS  →  docCid: Qm...
+#   → Registration JSON pinned separately  →  _cid: Qm...
+#
+# Cast vote →           POST /api/vote/cast
+#   → Vote record JSON pinned to IPFS  →  voteRecordCid: Qm...
+#   → Audit log JSON pinned separately  →  auditCid: Qm...
+#   → Console: 📌 Vote record stored on IPFS — CID: Qm...
+#   → Console: 📌 Audit log stored on IPFS — CID: Qm...
+
+# ════════════════════════════════════════════
+# VERIFY IPFS STORAGE (show during defense)
+# ════════════════════════════════════════════
+
+# Check health — shows IPFS status + counts
+curl http://localhost:5000/api/health
+
+# Get all CIDs for a collection
+curl -H "Authorization: Bearer <adminToken>" \
+     http://localhost:5000/api/admin/ipfs-trail/elections
+
+curl -H "Authorization: Bearer <adminToken>" \
+     http://localhost:5000/api/admin/ipfs-trail/votes
+
+# Pin a snapshot of the entire index to IPFS
+curl http://localhost:5000/api/ipfs/snapshot
+# Returns: { cid: "Qm...", url: "https://ipfs.io/ipfs/Qm..." }
+
+# Verify any CID directly in browser:
+# https://ipfs.io/ipfs/<CID>
+# https://gateway.pinata.cloud/ipfs/<CID>
+
+# ════════════════════════════════════════════
+# LOCAL DB FILES (fallback without Pinata)
+# ════════════════════════════════════════════
+
+# All records saved to blockchain-evoting/backend/db/
+ls backend/db/
+
+# Example files:
+#   index.json            ← CID registry (all collection indices)
+#   users-<uuid>.json     ← each user record
+#   elections-<uuid>.json ← each election record
+#   candidates-<uuid>.json
+#   voters-<uuid>.json
+#   votes-<uuid>.json
+
+# ════════════════════════════════════════════
+# WHAT TO SAY IN DEFENSE
+# ════════════════════════════════════════════
+
+# "We replaced MongoDB with IPFS as our primary database.
+#  Every record — user registrations, elections, candidates,
+#  voter forms, and vote records — is individually pinned to IPFS
+#  via Pinata and gets a unique content identifier (CID).
+#
+#  The CID is a cryptographic hash of the data — if anyone
+#  tampers with a record, the CID would change, making
+#  manipulation immediately detectable.
+#
+#  We maintain a local index mapping IDs to CIDs, and the
+#  entire index snapshot can itself be pinned to IPFS —
+#  creating a fully verifiable, tamper-evident audit trail
+#  with no central database."
