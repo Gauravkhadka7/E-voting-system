@@ -1,0 +1,14 @@
+{
+  "name": "DIWASHA ACHARYA",
+  "email": "diwash456@gmail.com",
+  "password": "$2a$10$LTdcqiNddd4CK7witK03mOIa6mRIcUouIafXbRthVJSW8.zg7a.ny",
+  "phone": "1234567890",
+  "isRegistered": true,
+  "hasVoted": false,
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "verified": true,
+  "_id": "23cf890e-6405-494e-897b-075a20a095a0",
+  "_type": "users",
+  "_created": "2026-04-15T03:39:47.862Z",
+  "_updated": "2026-04-15T03:40:50.557Z"
+}

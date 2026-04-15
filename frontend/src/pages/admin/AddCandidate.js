@@ -29,7 +29,7 @@ export default function AddCandidate() {
     api.get('/api/elections', { headers:{ Authorization:`Bearer ${token}` } })
       .then(r => setElections(r.data))
       .catch(() => setElections([{ _id:'demo', title:'Presidential Election 2024' }]));
-  }, []);
+  }, [token]);
 
   // ── Image handling ──────────────────────────────────────────
   const processImage = file => {

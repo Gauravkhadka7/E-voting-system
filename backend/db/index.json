@@ -1,7 +1,156 @@
 {
-  "users": [],
-  "elections": [],
-  "candidates": [],
-  "voters": [],
+  "users": [
+    {
+      "id": "d012931a-749f-45b2-9dec-2708b2f0d242",
+      "cid": "QmDevd012931a749f45b29dec2708b2f0d242",
+      "preview": {
+        "name": "Diwash",
+        "email": "diwasha158@gmail.com",
+        "isRegistered": true,
+        "hasVoted": false,
+        "verified": true
+      },
+      "created": "2026-04-11T08:30:07.834Z"
+    },
+    {
+      "id": "3914008d-b0f0-42bf-ab99-7bdb7272a36d",
+      "cid": "QmDev3914008db0f042bfab997bdb7272a36d",
+      "preview": {
+        "name": "iost",
+        "email": "dean674@gmail.com",
+        "isRegistered": false,
+        "hasVoted": false,
+        "verified": true
+      },
+      "created": "2026-04-11T08:46:08.584Z"
+    },
+    {
+      "id": "97214428-c00b-4674-aa86-d794c5a39929",
+      "cid": "QmDev97214428c00b4674aa86d794c5a39929",
+      "preview": {
+        "name": "aaditya thapa",
+        "email": "thapaaadit34@gmail.com",
+        "isRegistered": false,
+        "hasVoted": false,
+        "verified": true
+      },
+      "created": "2026-04-15T03:35:58.092Z"
+    },
+    {
+      "id": "23cf890e-6405-494e-897b-075a20a095a0",
+      "cid": "QmDev23cf890e6405494e897b075a20a095a0",
+      "preview": {
+        "name": "DIWASHA ACHARYA",
+        "email": "diwash456@gmail.com",
+        "isRegistered": true,
+        "hasVoted": false,
+        "verified": true
+      },
+      "created": "2026-04-15T03:39:47.862Z"
+    }
+  ],
+  "elections": [
+    {
+      "id": "224ec0b3-d32d-4d15-84d3-4e4b3009d9f4",
+      "cid": "QmDev224ec0b3d32d4d1584d34e4b3009d9f4",
+      "preview": {
+        "title": "Diwash",
+        "status": "upcoming",
+        "startDate": "2027-02-20T02:15:00.000Z",
+        "endDate": "2028-02-02T12:15:00.000Z"
+      },
+      "created": "2026-04-11T08:52:22.540Z"
+    },
+    {
+      "id": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+      "cid": "QmDevaf2f850fc4f74059a6d918f7709752ec",
+      "preview": {
+        "title": "Class CR",
+        "status": "upcoming",
+        "startDate": "2026-06-02T02:15:00.000Z",
+        "endDate": "2026-08-02T12:15:00.000Z"
+      },
+      "created": "2026-04-15T03:34:10.313Z"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "2a154265-5f58-48af-a5ff-5a47b5c3faa8",
+      "cid": "QmDev2a1542655f5848afa5ff5a47b5c3faa8",
+      "preview": {
+        "name": "Dean",
+        "party": "Ambrose",
+        "election": "224ec0b3-d32d-4d15-84d3-4e4b3009d9f4",
+        "voteCount": 0
+      },
+      "created": "2026-04-11T08:57:30.190Z"
+    },
+    {
+      "id": "403b2461-83b3-4fe7-9e43-34a1f7379c51",
+      "cid": "QmDev403b246183b34fe79e4334a1f7379c51",
+      "preview": {
+        "name": "fdgf",
+        "party": "janardan",
+        "election": "224ec0b3-d32d-4d15-84d3-4e4b3009d9f4",
+        "voteCount": 0
+      },
+      "created": "2026-04-15T03:43:40.926Z"
+    },
+    {
+      "id": "384814cf-713c-4396-b289-71f04ead07a1",
+      "cid": "QmDev384814cf713c4396b28971f04ead07a1",
+      "preview": {
+        "name": "Aaaditya Thapa",
+        "party": "bell",
+        "election": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+        "voteCount": 0
+      },
+      "created": "2026-04-15T03:44:51.952Z"
+    },
+    {
+      "id": "9ad49c72-34bf-46cd-97f9-c0a4af8cfb46",
+      "cid": "QmDev9ad49c7234bf46cd97f9c0a4af8cfb46",
+      "preview": {
+        "name": "Mahendra",
+        "party": "janardan",
+        "election": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+        "voteCount": 0
+      },
+      "created": "2026-04-15T03:52:30.877Z"
+    },
+    {
+      "id": "00ca324f-62d8-4811-aa8d-65ebabf5bc1d",
+      "cid": "QmDev00ca324f62d84811aa8d65ebabf5bc1d",
+      "preview": {
+        "name": "BheshSaru",
+        "party": "Ambrose",
+        "election": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+        "voteCount": 0
+      },
+      "created": "2026-04-15T03:53:15.879Z"
+    }
+  ],
+  "voters": [
+    {
+      "id": "91920c2d-f5e8-451f-beb2-1c152199cda3",
+      "cid": "QmDev91920c2df5e8451fbeb21c152199cda3",
+      "preview": {
+        "userId": "d012931a-749f-45b2-9dec-2708b2f0d242",
+        "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+        "status": "approved"
+      },
+      "created": "2026-04-11T08:32:18.844Z"
+    },
+    {
+      "id": "65ffff4f-e9b9-4d35-b744-72025bccaff7",
+      "cid": "QmDev65ffff4fe9b94d35b74472025bccaff7",
+      "preview": {
+        "userId": "23cf890e-6405-494e-897b-075a20a095a0",
+        "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+        "status": "approved"
+      },
+      "created": "2026-04-15T03:40:50.522Z"
+    }
+  ],
   "votes": []
 }

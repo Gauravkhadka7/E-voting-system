@@ -1,0 +1,16 @@
+{
+  "name": "BheshSaru",
+  "party": "Ambrose",
+  "age": "34",
+  "qualification": "Msc",
+  "bio": "adfdf",
+  "election": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+  "imageUrl": "/uploads/candidates/1776225195843-uzk7s2xbrl.PNG",
+  "imageCid": "QmDevCaptu3.PNG1776225195878",
+  "ipfsImageUrl": "https://ipfs.io/ipfs/QmDevCaptu3.PNG1776225195878",
+  "voteCount": 0,
+  "_id": "00ca324f-62d8-4811-aa8d-65ebabf5bc1d",
+  "_type": "candidates",
+  "_created": "2026-04-15T03:53:15.879Z",
+  "_updated": "2026-04-15T03:53:15.879Z"
+}

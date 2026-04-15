@@ -4,14 +4,13 @@ import api from '../../utils/api';
 
 export default function UserSignup() {
   const navigate = useNavigate();
-  const [step, setStep] = useState('form'); // 'form' | 'verify' | 'done'
+  const [step, setStep] = useState('form'); // 'form' | 'verify'
   const [form, setForm] = useState({ name:'', email:'', password:'', confirm:'', phone:'' });
   const [otp, setOtp]   = useState(['','','','','','']);
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState('');
-  const [info, setInfo]         = useState('');
-  const [devCode, setDevCode]   = useState('');
-  const [requiresVerify, setRequiresVerify] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]     = useState('');
+  const [info, setInfo]       = useState('');
+  const [devCode, setDevCode] = useState('');
 
   const handleRegister = async e => {
     e.preventDefault();
@@ -24,25 +23,17 @@ export default function UserSignup() {
         name: form.name, email: form.email,
         password: form.password, phone: form.phone,
       });
-
-      // Dev mode — no email needed, go straight to login
+      // Dev mode — no email needed, go to login immediately
       if (!res.data.requiresVerification) {
-        navigate('/user/login', {
-          state: { msg: '✅ Account created! You can now sign in.' }
-        });
+        navigate('/user/login', { state: { msg: '✅ Account created! You can now sign in.' } });
         return;
       }
-
-      // Email mode — show OTP verification
-      setRequiresVerify(true);
       setInfo(res.data.message);
       if (res.data.devCode) setDevCode(res.data.devCode);
       setStep('verify');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const handleOtpChange = (i, val) => {
@@ -65,7 +56,7 @@ export default function UserSignup() {
       await api.post('/api/auth/user/verify-email', { email: form.email, code });
       navigate('/user/login', { state: { msg: '✅ Email verified! Sign in to continue.' } });
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid code. Try again.');
+      setError(err.response?.data?.message || 'Invalid code.');
     } finally { setLoading(false); }
   };
 
@@ -102,30 +93,28 @@ export default function UserSignup() {
             <div className="auth-title">Sign Up</div>
             <div className="auth-sub">Register to participate in blockchain elections</div>
             {error && <div className="alert alert-error">⚠ {error}</div>}
-
             <form onSubmit={handleRegister} noValidate>
               <div className="form-group">
-                <label className="form-label" htmlFor="signup-name">Full Name <span>*</span></label>
-                <input id="signup-name" name="name" className="form-control" type="text"
+                <label className="form-label" htmlFor="su-name">Full Name <span>*</span></label>
+                <input id="su-name" name="name" className="form-control" type="text"
                   autoComplete="name" placeholder="Your legal full name"
                   value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required autoFocus />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="signup-email">Email Address <span>*</span></label>
-                <input id="signup-email" name="email" className="form-control" type="email"
+                <label className="form-label" htmlFor="su-email">Email Address <span>*</span></label>
+                <input id="su-email" name="email" className="form-control" type="email"
                   autoComplete="email" placeholder="your@email.com"
                   value={form.email} onChange={e=>setForm({...form,email:e.target.value})} required />
-                <div className="form-hint">Used for account verification</div>
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="signup-phone">Phone Number</label>
-                <input id="signup-phone" name="phone" className="form-control" type="tel"
+                <label className="form-label" htmlFor="su-phone">Phone Number</label>
+                <input id="su-phone" name="phone" className="form-control" type="tel"
                   autoComplete="tel" placeholder="+977 980 000 0000"
                   value={form.phone} onChange={e=>setForm({...form,phone:e.target.value})} />
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="signup-password">Password <span>*</span></label>
-                <input id="signup-password" name="password" className="form-control" type="password"
+                <label className="form-label" htmlFor="su-pass">Password <span>*</span></label>
+                <input id="su-pass" name="password" className="form-control" type="password"
                   autoComplete="new-password" placeholder="Minimum 6 characters"
                   value={form.password} onChange={e=>setForm({...form,password:e.target.value})} required />
                 {form.password && (
@@ -138,8 +127,8 @@ export default function UserSignup() {
                 )}
               </div>
               <div className="form-group">
-                <label className="form-label" htmlFor="signup-confirm">Confirm Password <span>*</span></label>
-                <input id="signup-confirm" name="confirm" className="form-control" type="password"
+                <label className="form-label" htmlFor="su-confirm">Confirm Password <span>*</span></label>
+                <input id="su-confirm" name="confirm" className="form-control" type="password"
                   autoComplete="new-password" placeholder="Re-enter password"
                   value={form.confirm} onChange={e=>setForm({...form,confirm:e.target.value})} required />
                 {form.confirm && form.password !== form.confirm && (
@@ -168,18 +157,18 @@ export default function UserSignup() {
                 6-digit code sent to <strong style={{ color:'var(--eth)' }}>{form.email}</strong>
               </div>
             </div>
-            {info && <div className="alert alert-info">ℹ {info}</div>}
+            {info    && <div className="alert alert-info">ℹ {info}</div>}
             {devCode && (
-              <div style={{ background:'rgba(98,126,234,0.06)', border:'1px solid rgba(98,126,234,0.2)', borderRadius:9, padding:'10px 14px', marginBottom:14, fontFamily:'var(--font-mono)', fontSize:'.82rem', color:'var(--muted)' }}>
+              <div style={{ background:'rgba(98,126,234,0.06)', border:'1px solid rgba(98,126,234,0.2)', borderRadius:9, padding:'10px 14px', marginBottom:14, fontFamily:'var(--font-mono)', fontSize:'.82rem' }}>
                 Dev mode code: <span style={{ color:'var(--eth)', fontWeight:700, fontSize:'1rem' }}>{devCode}</span>
               </div>
             )}
             {error && <div className="alert alert-error">⚠ {error}</div>}
-
             <div style={{ display:'flex', gap:10, justifyContent:'center', marginBottom:24 }} onPaste={handleOtpPaste}>
               {otp.map((d,i) => (
                 <input key={i} id={`otp-${i}`} type="text" inputMode="numeric" maxLength={1}
-                  value={d} onChange={e=>handleOtpChange(i,e.target.value)} autoComplete="off"
+                  value={d} autoComplete="off"
+                  onChange={e=>handleOtpChange(i,e.target.value)}
                   onKeyDown={e=>e.key==='Backspace'&&!d&&i>0&&document.getElementById(`otp-${i-1}`)?.focus()}
                   style={{ width:52, height:58, textAlign:'center', fontSize:'1.6rem', fontWeight:700,
                     background:'var(--card2)', border:`2px solid ${d?'var(--eth)':'var(--border2)'}`,

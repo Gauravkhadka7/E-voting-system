@@ -1,0 +1,14 @@
+{
+  "title": "Diwash",
+  "description": "adfadsf",
+  "startDate": "2027-02-20T02:15:00.000Z",
+  "endDate": "2028-02-02T12:15:00.000Z",
+  "type": "single-choice",
+  "status": "upcoming",
+  "totalVotes": 0,
+  "createdBy": "admin",
+  "_id": "224ec0b3-d32d-4d15-84d3-4e4b3009d9f4",
+  "_type": "elections",
+  "_created": "2026-04-11T08:52:22.540Z",
+  "_updated": "2026-04-11T08:52:22.540Z"
+}

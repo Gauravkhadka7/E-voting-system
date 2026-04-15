@@ -1,0 +1,16 @@
+{
+  "name": "Mahendra",
+  "party": "janardan",
+  "age": "23",
+  "qualification": "vhghj",
+  "bio": "vhjvhj",
+  "election": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+  "imageUrl": "/uploads/candidates/1776225150847-vm5s5225tra.PNG",
+  "imageCid": "QmDev5.PNG1776225150876",
+  "ipfsImageUrl": "https://ipfs.io/ipfs/QmDev5.PNG1776225150876",
+  "voteCount": 0,
+  "_id": "9ad49c72-34bf-46cd-97f9-c0a4af8cfb46",
+  "_type": "candidates",
+  "_created": "2026-04-15T03:52:30.877Z",
+  "_updated": "2026-04-15T03:52:30.877Z"
+}

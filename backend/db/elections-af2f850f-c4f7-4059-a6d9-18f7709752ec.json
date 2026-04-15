@@ -1,0 +1,14 @@
+{
+  "title": "Class CR",
+  "description": "it is our election to reprsentive the class cr",
+  "startDate": "2026-06-02T02:15:00.000Z",
+  "endDate": "2026-08-02T12:15:00.000Z",
+  "type": "single-choice",
+  "status": "upcoming",
+  "totalVotes": 0,
+  "createdBy": "admin",
+  "_id": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+  "_type": "elections",
+  "_created": "2026-04-15T03:34:10.313Z",
+  "_updated": "2026-04-15T03:34:10.313Z"
+}

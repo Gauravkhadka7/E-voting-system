@@ -1,18 +1,23 @@
 const express = require('express');
 const router  = express.Router();
 const db      = require('../services/ipfsDB');
-const { protect, adminOnly } = require('../middleware/auth');
+const { protect, adminOnly, optionalAuth } = require('../middleware/auth');
 const upload  = require('../middleware/upload');
 const { sendRegistrationApproved } = require('../services/emailService');
 
-router.get('/status', protect, async (req, res) => {
+// GET voter status — returns safe defaults if not logged in
+router.get('/status', optionalAuth, async (req, res) => {
   try {
+    if (!req.user || !req.user.userId) {
+      return res.json({ isRegistered: false, hasVoted: false });
+    }
     const user = await db.findById('users', req.user.userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    res.json({ isRegistered: user.isRegistered, hasVoted: user.hasVoted });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    if (!user) return res.json({ isRegistered: false, hasVoted: false });
+    res.json({ isRegistered: user.isRegistered || false, hasVoted: user.hasVoted || false });
+  } catch { res.json({ isRegistered: false, hasVoted: false }); }
 });
 
+// POST register voter
 router.post('/register', protect, upload.single('idDocument'), async (req, res) => {
   try {
     const existing = await db.findOne('voters', v => v.userId === req.user.userId);
@@ -28,7 +33,6 @@ router.post('/register', protect, upload.single('idDocument'), async (req, res) 
       try {
         docCid     = await db.pinFile(req.file.path, req.file.originalname);
         docIpfsUrl = db.ipfsUrl(docCid);
-        console.log(`📌 ID doc → IPFS CID: ${docCid}`);
       } catch (e) { console.warn('IPFS doc upload failed:', e.message); }
     }
 
@@ -37,28 +41,25 @@ router.post('/register', protect, upload.single('idDocument'), async (req, res) 
       address, city, state, pincode, idType, idNumber, walletAddress,
       docUrl, docCid, docIpfsUrl, status: 'approved',
     });
-    console.log(`📌 Voter registration → IPFS CID: ${registration._cid}`);
 
     await db.update('users', req.user.userId, { isRegistered: true, walletAddress });
 
-    // Send approval email
     const user = await db.findById('users', req.user.userId);
-    try {
-      await sendRegistrationApproved(user.email, user.name, { docCid, walletAddress });
-    } catch (e) { console.warn('Approval email failed:', e.message); }
+    try { await sendRegistrationApproved(user.email, user.name, { docCid, walletAddress }); }
+    catch (e) { console.warn('Approval email failed:', e.message); }
 
     res.status(201).json({
-      message:        'Voter registration successful!',
+      message: 'Voter registration successful!',
       registrationId: registration._id,
-      cid:            registration._cid,
-      ipfsUrl:        db.ipfsUrl(registration._cid),
-      docCid, docIpfsUrl,
+      cid: registration._cid,
     });
   } catch (err) {
+    console.error('voter register error:', err);
     res.status(500).json({ message: err.message || 'Registration failed.' });
   }
 });
 
+// GET all registrations (admin)
 router.get('/all', adminOnly, async (req, res) => {
   try {
     const voters = await db.find('voters');

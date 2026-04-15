@@ -1,0 +1,14 @@
+{
+  "name": "Diwash",
+  "email": "diwasha158@gmail.com",
+  "password": "$2a$10$LeUtbOUsfYNO.Z8PVmZEdeRY9K/RrHgDyKf4QqCrBPaHOBwt5T3fy",
+  "phone": "1234567890",
+  "isRegistered": true,
+  "hasVoted": false,
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "verified": true,
+  "_id": "d012931a-749f-45b2-9dec-2708b2f0d242",
+  "_type": "users",
+  "_created": "2026-04-11T08:30:07.834Z",
+  "_updated": "2026-04-11T08:32:19.191Z"
+}

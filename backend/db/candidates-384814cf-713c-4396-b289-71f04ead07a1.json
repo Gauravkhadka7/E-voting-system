@@ -1,0 +1,16 @@
+{
+  "name": "Aaaditya Thapa",
+  "party": "bell",
+  "age": "30",
+  "qualification": "Myhujg",
+  "bio": "etety",
+  "election": "af2f850f-c4f7-4059-a6d9-18f7709752ec",
+  "imageUrl": "/uploads/candidates/1776224691932-u9v5zsl59.png",
+  "imageCid": "QmDevbit.png1776224691951",
+  "ipfsImageUrl": "https://ipfs.io/ipfs/QmDevbit.png1776224691951",
+  "voteCount": 0,
+  "_id": "384814cf-713c-4396-b289-71f04ead07a1",
+  "_type": "candidates",
+  "_created": "2026-04-15T03:44:51.952Z",
+  "_updated": "2026-04-15T03:47:00.972Z"
+}

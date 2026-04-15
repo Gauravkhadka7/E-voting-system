@@ -1,0 +1,14 @@
+{
+  "name": "iost",
+  "email": "dean674@gmail.com",
+  "password": "$2a$10$a/RJEofx0U9BNyAVbgUaFOn6mK5vmfX5sZ994wQzs9D0vDrU55T6m",
+  "phone": "455675",
+  "isRegistered": false,
+  "hasVoted": false,
+  "walletAddress": "",
+  "verified": true,
+  "_id": "3914008d-b0f0-42bf-ab99-7bdb7272a36d",
+  "_type": "users",
+  "_created": "2026-04-11T08:46:08.584Z",
+  "_updated": "2026-04-11T08:46:08.585Z"
+}

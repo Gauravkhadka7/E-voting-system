@@ -1,0 +1,20 @@
+{
+  "userId": "d012931a-749f-45b2-9dec-2708b2f0d242",
+  "dob": "2000-02-22",
+  "gender": "Male",
+  "address": "syangja",
+  "city": "sys",
+  "state": "gug",
+  "pincode": "23455",
+  "idType": "national_id",
+  "idNumber": "5647647856",
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "docUrl": "/uploads/voter-docs/1775896336944-yyb0cz3fewr.png",
+  "docCid": "QmDev7.png1775896338844",
+  "docIpfsUrl": "https://ipfs.io/ipfs/QmDev7.png1775896338844",
+  "status": "approved",
+  "_id": "91920c2d-f5e8-451f-beb2-1c152199cda3",
+  "_type": "voters",
+  "_created": "2026-04-11T08:32:18.844Z",
+  "_updated": "2026-04-11T08:32:18.844Z"
+}

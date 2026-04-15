@@ -1,10 +1,3 @@
-/**
- * api.js — Axios configuration for BlockVote
- *
- * Direct URL to backend (most reliable fix for 404 errors)
- * Frontend: http://localhost:3000
- * Backend:  http://localhost:5000
- */
 import axios from 'axios';
 
 const api = axios.create({
@@ -13,26 +6,31 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT token automatically to every request
+// Auto-attach token to every request
 api.interceptors.request.use(config => {
-  const adminToken = localStorage.getItem('adminToken');
-  const userToken  = localStorage.getItem('userToken');
-  const token = adminToken || userToken;
+  const token = localStorage.getItem('adminToken') || localStorage.getItem('userToken');
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
-});
+}, err => Promise.reject(err));
 
-// Handle 401 — token expired
+// Handle auth errors gracefully — don't redirect on every 401
 api.interceptors.response.use(
   res => res,
   err => {
+    // Only redirect on 401 for protected page requests, not background polls
     if (err.response?.status === 401) {
-      // Clear tokens and redirect to login
-      const isAdmin = !!localStorage.getItem('adminToken');
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('userToken');
-      localStorage.removeItem('userInfo');
-      window.location.href = isAdmin ? '/admin/login' : '/user/login';
+      const url = err.config?.url || '';
+      // Don't auto-logout on public/status endpoints
+      const isPublic = url.includes('/elections/active') || 
+                       url.includes('/vote/results') ||
+                       url.includes('/candidates/public');
+      if (!isPublic) {
+        const isAdmin = !!localStorage.getItem('adminToken');
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('userToken');
+        localStorage.removeItem('userInfo');
+        window.location.href = isAdmin ? '/admin/login' : '/user/login';
+      }
     }
     return Promise.reject(err);
   }
