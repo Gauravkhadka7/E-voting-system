@@ -1,0 +1,22 @@
+{
+  "name": "aadittya",
+  "email": "sos786058@gmail.com",
+  "password": "$2a$10$QTn5WffR8YTzxc6yx9eJ1uNB.K7EKCJDl66BoCQMfYfvSGoDR9dnq",
+  "phone": "",
+  "isRegistered": true,
+  "hasVoted": true,
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "verified": true,
+  "userRole": "voter",
+  "assignedElections": [
+    "b06a5fd4-cf75-47d1-9b7f-87f235b38a72"
+  ],
+  "permissions": [
+    "view_elections",
+    "vote"
+  ],
+  "_id": "dac45be5-57ac-41fe-a3f7-189f6f352204",
+  "_type": "users",
+  "_created": "2026-04-19T09:54:32.524Z",
+  "_updated": "2026-04-19T10:11:17.163Z"
+}

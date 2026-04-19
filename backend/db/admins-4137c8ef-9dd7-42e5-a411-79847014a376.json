@@ -1,0 +1,17 @@
+{
+  "username": "Dean",
+  "email": "diwasha158@gmail.com",
+  "password": "$2a$10$QNgSwST61cLVwjP6WSvOvuOEVv7hKYA/d1s4gVU7TxzO6Zd34BxXe",
+  "adminRole": "election_manager",
+  "permissions": [
+    "create_election",
+    "update_election",
+    "view_all"
+  ],
+  "_id": "4137c8ef-9dd7-42e5-a411-79847014a376",
+  "_type": "admins",
+  "_created": "2026-04-15T15:05:20.029Z",
+  "_updated": "2026-04-16T02:33:59.197Z",
+  "resetToken": "0936b6c47be23a7639ee74e7ddde796635d69648af1e6207303169f838cd334d",
+  "resetExpiry": 1776308639195
+}

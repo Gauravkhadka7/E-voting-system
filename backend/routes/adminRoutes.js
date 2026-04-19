@@ -138,4 +138,12 @@ router.post('/bulk-candidates', adminOnly, async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 });
 
+// GET list all sub-admins (super admin only)
+router.get('/list-admins', adminOnly, async (req, res) => {
+  try {
+    const admins = await db.find('admins');
+    res.json(admins.map(a => ({ _id: a._id, username: a.username, email: a.email, adminRole: a.adminRole, permissions: a.permissions })));
+  } catch (err) { res.status(500).json({ message: err.message }); }
+});
+
 module.exports = router;

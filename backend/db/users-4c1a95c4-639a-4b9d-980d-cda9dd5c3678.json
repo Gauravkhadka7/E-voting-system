@@ -1,0 +1,20 @@
+{
+  "name": "aadit",
+  "email": "sos76058@gmail.com",
+  "password": "$2a$10$it72M3ASwgOMaG/QZz0IIeB0WcawzH0wXNSlDfVcUBY6w.bPeRxxG",
+  "phone": "",
+  "isRegistered": false,
+  "hasVoted": false,
+  "walletAddress": "",
+  "verified": false,
+  "userRole": "voter",
+  "assignedElections": [],
+  "permissions": [
+    "view_elections",
+    "vote"
+  ],
+  "_id": "4c1a95c4-639a-4b9d-980d-cda9dd5c3678",
+  "_type": "users",
+  "_created": "2026-04-19T09:51:19.166Z",
+  "_updated": "2026-04-19T09:51:19.166Z"
+}

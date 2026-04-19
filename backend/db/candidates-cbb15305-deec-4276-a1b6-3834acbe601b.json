@@ -1,0 +1,16 @@
+{
+  "name": "Deam",
+  "party": "Ambrose",
+  "age": "34",
+  "qualification": "a",
+  "bio": "adf",
+  "election": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+  "imageUrl": "/uploads/candidates/1776515942649-73942sl9ni.png",
+  "imageCid": "QmDevgame.png1776515944733",
+  "ipfsImageUrl": "https://ipfs.io/ipfs/QmDevgame.png1776515944733",
+  "voteCount": 3,
+  "_id": "cbb15305-deec-4276-a1b6-3834acbe601b",
+  "_type": "candidates",
+  "_created": "2026-04-18T12:39:04.734Z",
+  "_updated": "2026-04-19T10:06:17.309Z"
+}

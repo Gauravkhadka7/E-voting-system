@@ -1,6 +1,6 @@
 {
   "title": "Diwash",
-  "description": "adfadsf",
+  "description": "",
   "startDate": "2027-02-20T02:15:00.000Z",
   "endDate": "2028-02-02T12:15:00.000Z",
   "type": "single-choice",
@@ -10,5 +10,10 @@
   "_id": "224ec0b3-d32d-4d15-84d3-4e4b3009d9f4",
   "_type": "elections",
   "_created": "2026-04-11T08:52:22.540Z",
-  "_updated": "2026-04-11T08:52:22.540Z"
+  "_updated": "2026-04-18T12:32:58.600Z",
+  "assignedUsers": [
+    "23cf890e-6405-494e-897b-075a20a095a0"
+  ],
+  "startTime": "02:15",
+  "endTime": "12:15"
 }

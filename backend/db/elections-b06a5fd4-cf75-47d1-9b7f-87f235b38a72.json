@@ -1,0 +1,14 @@
+{
+  "title": "Class head",
+  "startDate": "2026-04-18T08:40:00.000Z",
+  "endDate": "2027-04-18T14:22:00.000Z",
+  "type": "single-choice",
+  "totalVotes": 3,
+  "assignedUsers": [
+    "d012931a-749f-45b2-9dec-2708b2f0d242"
+  ],
+  "_id": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+  "_type": "elections",
+  "_created": "2026-04-18T12:36:37.547Z",
+  "_updated": "2026-04-19T10:06:17.675Z"
+}

@@ -1,0 +1,20 @@
+{
+  "userId": "dac45be5-57ac-41fe-a3f7-189f6f352204",
+  "dob": "1999-02-10",
+  "gender": "Male",
+  "address": "saerngri",
+  "city": "pkr",
+  "state": "",
+  "pincode": "",
+  "idType": "national_id",
+  "idNumber": "w2656487",
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "docUrl": "/uploads/voter-docs/1776592733444-ks31t8mv5sm.PNG",
+  "docCid": "QmDev5.PNG1776592735449",
+  "docIpfsUrl": "https://ipfs.io/ipfs/QmDev5.PNG1776592735449",
+  "status": "approved",
+  "_id": "3d709c08-3af8-4a46-8ae3-74f60385c7c4",
+  "_type": "voters",
+  "_created": "2026-04-19T09:58:55.449Z",
+  "_updated": "2026-04-19T09:58:55.449Z"
+}

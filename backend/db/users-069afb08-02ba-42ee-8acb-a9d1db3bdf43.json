@@ -1,0 +1,20 @@
+{
+  "name": "Dean Ambrose",
+  "email": "dean63723@gmail.com",
+  "password": "$2a$10$wJdrZWxj3nVgLFaSQH0cZ.bTNID7uTo8hbod5mbJotxfsra0xZZ6y",
+  "phone": "1234567890",
+  "isRegistered": false,
+  "hasVoted": false,
+  "walletAddress": "",
+  "verified": true,
+  "userRole": "voter",
+  "assignedElections": [],
+  "permissions": [
+    "view_elections",
+    "vote"
+  ],
+  "_id": "069afb08-02ba-42ee-8acb-a9d1db3bdf43",
+  "_type": "users",
+  "_created": "2026-04-16T02:36:41.472Z",
+  "_updated": "2026-04-16T02:37:45.730Z"
+}

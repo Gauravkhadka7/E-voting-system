@@ -1,0 +1,19 @@
+{
+  "dob": "2000-01-02",
+  "gender": "Male",
+  "address": "syangja",
+  "city": "sys",
+  "state": "gug",
+  "pincode": "23455",
+  "idType": "national_id",
+  "idNumber": "12",
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "docUrl": "/uploads/voter-docs/1776415118541-wtt2v454ynh.png",
+  "docCid": "QmDev7.png1776415120597",
+  "docIpfsUrl": "https://ipfs.io/ipfs/QmDev7.png1776415120597",
+  "status": "approved",
+  "_id": "03e4fc36-5c36-4db8-8a24-1af897994ccf",
+  "_type": "voters",
+  "_created": "2026-04-17T08:38:40.602Z",
+  "_updated": "2026-04-17T08:38:40.602Z"
+}

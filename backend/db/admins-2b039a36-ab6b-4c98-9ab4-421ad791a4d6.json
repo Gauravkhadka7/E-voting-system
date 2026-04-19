@@ -1,0 +1,13 @@
+{
+  "username": "Dean",
+  "email": "dean63723@gmail.com",
+  "password": "$2a$10$7RO1qBwWbKbdUZwa89OKoeM8vehVJp6LZaRrAvhiMPAn60TpzTSre",
+  "adminRole": "viewer",
+  "permissions": [
+    "view_all"
+  ],
+  "_id": "2b039a36-ab6b-4c98-9ab4-421ad791a4d6",
+  "_type": "admins",
+  "_created": "2026-04-16T02:44:57.379Z",
+  "_updated": "2026-04-16T02:44:57.379Z"
+}

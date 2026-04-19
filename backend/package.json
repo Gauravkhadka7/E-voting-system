@@ -19,9 +19,16 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.10.1",
     "snarkjs": "^0.7.3",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "@openzeppelin/contracts": "^4.9.3",
+    "concurrently": "^8.2.2"
+   
   },
   "devDependencies": {
-    "nodemon": "^3.0.0"
+    "nodemon": "^3.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "chai": "^4.3.10",
+    "ganache": "^7.9.1",
+    "hardhat": "^2.19.0"
   }
 }

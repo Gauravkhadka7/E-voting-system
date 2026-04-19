@@ -1,0 +1,14 @@
+{
+  "_type": "vote_audit",
+  "event": "vote_cast",
+  "electionId": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+  "electionTitle": "Class head",
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "nullifierHash": "6951ea6a68d86f92b092a8c7106874ce6b7993d1f5552a53b26952c4fe08fce6",
+  "commitment": "3c6d809c65740fb7b0ed8c1a854892bd4859cbc63d03418a7bc7ce493b874283",
+  "zkVerified": true,
+  "txHash": "0x0000000000000000000000000000000000000000000000000000019da5348335",
+  "voteRecordCid": "QmDev54bf6cd7059d4fb781b14dd8f06784ed",
+  "timestamp": "2026-04-19T10:06:16.950Z",
+  "note": "Vote content encrypted — candidate choice is private and immutable"
+}

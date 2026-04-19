@@ -1,0 +1,22 @@
+{
+  "userId": "dac45be5-57ac-41fe-a3f7-189f6f352204",
+  "electionId": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "encryptedVote": "f8bd396e0dfc5284fff97308e3bff32691d5dafdc3b28dfe5e190d7d0f88f3fcb36a74ee903b14503b606703181c2c50",
+  "iv": "4084171dc21dc17d8f1ca3a01561e8e2",
+  "commitment": "3c6d809c65740fb7b0ed8c1a854892bd4859cbc63d03418a7bc7ce493b874283",
+  "nullifierHash": "6951ea6a68d86f92b092a8c7106874ce6b7993d1f5552a53b26952c4fe08fce6",
+  "zkProof": {
+    "protocol": "groth16",
+    "publicSignals": [
+      "9e37e1d650637461",
+      "484d595f2b2c357a"
+    ],
+    "verified": true
+  },
+  "txHash": "0x0000000000000000000000000000000000000000000000000000019da5348335",
+  "_id": "54bf6cd7-059d-4fb7-81b1-4dd8f06784ed",
+  "_type": "votes",
+  "_created": "2026-04-19T10:06:15.372Z",
+  "_updated": "2026-04-19T10:06:15.372Z"
+}

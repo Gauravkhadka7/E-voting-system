@@ -10,5 +10,7 @@
   "_id": "97214428-c00b-4674-aa86-d794c5a39929",
   "_type": "users",
   "_created": "2026-04-15T03:35:58.092Z",
-  "_updated": "2026-04-15T03:35:58.092Z"
+  "_updated": "2026-04-19T09:41:08.955Z",
+  "resetToken": "dc7aa451f65caa9f451bcf8b3c27cfe458b908b4ad51880777bddfe4308252a2",
+  "resetExpiry": 1776593468954
 }

@@ -7,7 +7,7 @@
         "name": "Diwash",
         "email": "diwasha158@gmail.com",
         "isRegistered": true,
-        "hasVoted": false,
+        "hasVoted": true,
         "verified": true
       },
       "created": "2026-04-11T08:30:07.834Z"
@@ -47,6 +47,54 @@
         "verified": true
       },
       "created": "2026-04-15T03:39:47.862Z"
+    },
+    {
+      "id": "069afb08-02ba-42ee-8acb-a9d1db3bdf43",
+      "cid": "QmDev069afb0802ba42ee8acba9d1db3bdf43",
+      "preview": {
+        "name": "Dean Ambrose",
+        "email": "dean63723@gmail.com",
+        "isRegistered": false,
+        "hasVoted": false,
+        "verified": true
+      },
+      "created": "2026-04-16T02:36:41.472Z"
+    },
+    {
+      "id": "01d2d17b-1a3f-4ae0-98f1-b529bc3527b0",
+      "cid": "QmDev01d2d17b1a3f4ae098f1b529bc3527b0",
+      "preview": {
+        "name": "Gaurav Khadka",
+        "email": "gauravkhadka6677@gmail.com",
+        "isRegistered": true,
+        "hasVoted": true,
+        "verified": true
+      },
+      "created": "2026-04-19T08:10:49.833Z"
+    },
+    {
+      "id": "4c1a95c4-639a-4b9d-980d-cda9dd5c3678",
+      "cid": "QmDev4c1a95c4639a4b9d980dcda9dd5c3678",
+      "preview": {
+        "name": "aadit",
+        "email": "sos76058@gmail.com",
+        "isRegistered": false,
+        "hasVoted": false,
+        "verified": false
+      },
+      "created": "2026-04-19T09:51:19.166Z"
+    },
+    {
+      "id": "dac45be5-57ac-41fe-a3f7-189f6f352204",
+      "cid": "QmDevdac45be557ac41fea3f7189f6f352204",
+      "preview": {
+        "name": "aadittya",
+        "email": "sos786058@gmail.com",
+        "isRegistered": true,
+        "hasVoted": true,
+        "verified": true
+      },
+      "created": "2026-04-19T09:54:32.524Z"
     }
   ],
   "elections": [
@@ -67,24 +115,23 @@
       "preview": {
         "title": "Class CR",
         "status": "upcoming",
-        "startDate": "2026-06-02T02:15:00.000Z",
+        "startDate": "2026-04-19T02:15:00.000Z",
         "endDate": "2026-08-02T12:15:00.000Z"
       },
       "created": "2026-04-15T03:34:10.313Z"
+    },
+    {
+      "id": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+      "cid": "QmDevb06a5fd4cf7547d19b7f87f235b38a72",
+      "preview": {
+        "title": "Class head",
+        "startDate": "2026-04-18T08:40:00.000Z",
+        "endDate": "2027-04-18T14:22:00.000Z"
+      },
+      "created": "2026-04-18T12:36:37.547Z"
     }
   ],
   "candidates": [
-    {
-      "id": "2a154265-5f58-48af-a5ff-5a47b5c3faa8",
-      "cid": "QmDev2a1542655f5848afa5ff5a47b5c3faa8",
-      "preview": {
-        "name": "Dean",
-        "party": "Ambrose",
-        "election": "224ec0b3-d32d-4d15-84d3-4e4b3009d9f4",
-        "voteCount": 0
-      },
-      "created": "2026-04-11T08:57:30.190Z"
-    },
     {
       "id": "403b2461-83b3-4fe7-9e43-34a1f7379c51",
       "cid": "QmDev403b246183b34fe79e4334a1f7379c51",
@@ -128,6 +175,17 @@
         "voteCount": 0
       },
       "created": "2026-04-15T03:53:15.879Z"
+    },
+    {
+      "id": "cbb15305-deec-4276-a1b6-3834acbe601b",
+      "cid": "QmDevcbb15305deec4276a1b63834acbe601b",
+      "preview": {
+        "name": "Deam",
+        "party": "Ambrose",
+        "election": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+        "voteCount": 3
+      },
+      "created": "2026-04-18T12:39:04.734Z"
     }
   ],
   "voters": [
@@ -150,7 +208,81 @@
         "status": "approved"
       },
       "created": "2026-04-15T03:40:50.522Z"
+    },
+    {
+      "id": "03e4fc36-5c36-4db8-8a24-1af897994ccf",
+      "cid": "QmDev03e4fc365c364db88a241af897994ccf",
+      "preview": {
+        "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+        "status": "approved"
+      },
+      "created": "2026-04-17T08:38:40.602Z"
+    },
+    {
+      "id": "894860fa-e452-4aa1-b422-7985620054a3",
+      "cid": "QmDev894860fae4524aa1b4227985620054a3",
+      "preview": {
+        "userId": "01d2d17b-1a3f-4ae0-98f1-b529bc3527b0",
+        "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+        "status": "approved"
+      },
+      "created": "2026-04-19T08:12:54.220Z"
+    },
+    {
+      "id": "3d709c08-3af8-4a46-8ae3-74f60385c7c4",
+      "cid": "QmDev3d709c083af84a468ae374f60385c7c4",
+      "preview": {
+        "userId": "dac45be5-57ac-41fe-a3f7-189f6f352204",
+        "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+        "status": "approved"
+      },
+      "created": "2026-04-19T09:58:55.449Z"
     }
   ],
-  "votes": []
+  "votes": [
+    {
+      "id": "56c0794d-0aa9-4eb5-b578-f555c6dacede",
+      "cid": "QmDev56c0794d0aa94eb5b578f555c6dacede",
+      "preview": {
+        "userId": "d012931a-749f-45b2-9dec-2708b2f0d242",
+        "electionId": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+        "nullifierHash": "6b577c2f39fe90b1060b5f18a7c22bec8b63c01c26a0884b668e6e9e36401235"
+      },
+      "created": "2026-04-18T12:44:49.598Z"
+    },
+    {
+      "id": "ec620a68-cade-40a1-a760-6d5af53e5ab2",
+      "cid": "QmDevec620a68cade40a1a7606d5af53e5ab2",
+      "preview": {
+        "userId": "01d2d17b-1a3f-4ae0-98f1-b529bc3527b0",
+        "electionId": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+        "nullifierHash": "84769a5427323556310199c6be4ebc1a871003d2d87148e209a21c88c21d338a"
+      },
+      "created": "2026-04-19T08:15:37.210Z"
+    },
+    {
+      "id": "54bf6cd7-059d-4fb7-81b1-4dd8f06784ed",
+      "cid": "QmDev54bf6cd7059d4fb781b14dd8f06784ed",
+      "preview": {
+        "userId": "dac45be5-57ac-41fe-a3f7-189f6f352204",
+        "electionId": "b06a5fd4-cf75-47d1-9b7f-87f235b38a72",
+        "nullifierHash": "6951ea6a68d86f92b092a8c7106874ce6b7993d1f5552a53b26952c4fe08fce6"
+      },
+      "created": "2026-04-19T10:06:15.372Z"
+    }
+  ],
+  "admins": [
+    {
+      "id": "4137c8ef-9dd7-42e5-a411-79847014a376",
+      "cid": "QmDev4137c8ef9dd742e5a41179847014a376",
+      "preview": {},
+      "created": "2026-04-15T15:05:20.029Z"
+    },
+    {
+      "id": "2b039a36-ab6b-4c98-9ab4-421ad791a4d6",
+      "cid": "QmDev2b039a36ab6b4c989ab4421ad791a4d6",
+      "preview": {},
+      "created": "2026-04-16T02:44:57.379Z"
+    }
+  ]
 }

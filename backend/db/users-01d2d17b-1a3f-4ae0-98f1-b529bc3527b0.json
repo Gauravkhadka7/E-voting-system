@@ -1,0 +1,22 @@
+{
+  "name": "Gaurav Khadka",
+  "email": "gauravkhadka6677@gmail.com",
+  "password": "$2a$10$dl2giMjotp0W/CkwfrMEw.H/PvnnNl8t8DqqZzLePy4L8zR0CfWSq",
+  "phone": "3897598",
+  "isRegistered": true,
+  "hasVoted": true,
+  "walletAddress": "0xed502aaa22bb9edb1b65b6cf7f2c4ede7247e925",
+  "verified": true,
+  "userRole": "voter",
+  "assignedElections": [
+    "b06a5fd4-cf75-47d1-9b7f-87f235b38a72"
+  ],
+  "permissions": [
+    "view_elections",
+    "vote"
+  ],
+  "_id": "01d2d17b-1a3f-4ae0-98f1-b529bc3527b0",
+  "_type": "users",
+  "_created": "2026-04-19T08:10:49.833Z",
+  "_updated": "2026-04-19T08:15:40.047Z"
+}

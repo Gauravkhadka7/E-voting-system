@@ -204,12 +204,41 @@ async function sendRegistrationApproved(toEmail, name, data) {
   );
 }
 
+
+// 5. Send password reset email
+async function sendPasswordReset(toEmail, nameOrUsername, resetToken, userType) {
+  const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}&type=${userType}`;
+
+  if (!process.env.EMAIL_USER) {
+    console.log(`\n[DEV] Password reset for ${toEmail}:`);
+    console.log(`  Token: ${resetToken}`);
+    console.log(`  URL:   ${resetUrl}\n`);
+    return;
+  }
+
+  await sendMail(
+    toEmail,
+    '🔐 BlockVote — Reset Your Password',
+    makeHTML(
+      'Reset Your Password',
+      `<p style="color:#A8B9D8">Hi <strong style="color:#F0F4FF">${nameOrUsername}</strong>,</p>
+       <p style="color:#A8B9D8">You requested a password reset. Click the button below or use the token to reset your password. This link expires in 30 minutes.</p>
+       <div style="text-align:center;margin:24px 0">
+         <a href="${resetUrl}" style="background:linear-gradient(135deg,#627EEA,#8B5CF6);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;display:inline-block">Reset Password →</a>
+       </div>
+       <p style="color:#A8B9D8;font-size:13px">Or use this token manually:</p>`
+      ,resetToken
+    )
+  );
+}
+
 module.exports = {
   sendUserVerification,
   sendAdminOTP,
   verifyAdminOTP,
   sendVoteReceipt,
   sendRegistrationApproved,
+  sendPasswordReset,
   verifyOTP,
   storeOTP,
   generateOTP,
