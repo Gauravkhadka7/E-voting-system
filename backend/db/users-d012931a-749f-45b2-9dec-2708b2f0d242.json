@@ -10,8 +10,9 @@
   "_id": "d012931a-749f-45b2-9dec-2708b2f0d242",
   "_type": "users",
   "_created": "2026-04-11T08:30:07.834Z",
-  "_updated": "2026-04-18T12:57:42.268Z",
+  "_updated": "2026-04-19T10:18:11.011Z",
   "assignedElections": [
+    "af2f850f-c4f7-4059-a6d9-18f7709752ec",
     "b06a5fd4-cf75-47d1-9b7f-87f235b38a72"
   ],
   "resetToken": "e23bbcd5c7d3c90a3f35befeac45454f6d686b38dd88dc83ac27f57da26c36ae",
