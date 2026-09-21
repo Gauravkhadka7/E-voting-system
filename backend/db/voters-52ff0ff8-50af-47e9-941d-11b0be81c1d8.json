@@ -1,0 +1,20 @@
+{
+  "userId": "demo",
+  "dob": "2002-02-22",
+  "gender": "Male",
+  "address": "Dudilabhati-1, Galkot",
+  "city": "Galkot",
+  "state": "af",
+  "pincode": "33700",
+  "idType": "passport",
+  "idNumber": "326",
+  "walletAddress": "0xf54e3de5b30c415f067c149c71099b90747c5167",
+  "docUrl": "/uploads/voter-docs/1777811754179-nu580b55glk.jpeg",
+  "docCid": "QmDevimage1 (1).jpeg1777811754210",
+  "docIpfsUrl": "https://ipfs.io/ipfs/QmDevimage1 (1).jpeg1777811754210",
+  "status": "approved",
+  "_id": "52ff0ff8-50af-47e9-941d-11b0be81c1d8",
+  "_type": "voters",
+  "_created": "2026-05-03T12:35:54.212Z",
+  "_updated": "2026-05-03T12:35:54.212Z"
+}

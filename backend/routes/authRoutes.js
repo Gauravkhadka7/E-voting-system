@@ -1,23 +1,21 @@
-"use strict";
 const express = require("express");
-const router  = express.Router();
-const ctrl    = require("../controllers/authController");
-const { adminOnly, requirePermission } = require("../middleware/auth");
+const router = express.Router();
+const authController = require("../controllers/authController");
+const { verifyToken } = require("../middleware/auth");
 
-// ── Admin ────────────────────────────────────────────────────
-router.post("/admin/login",          ctrl.adminLogin);
-router.post("/admin/register",       ctrl.adminRegister);  // create sub-admins
-router.post("/admin/request-otp",    ctrl.requestAdminOTP);
-router.post("/admin/verify-otp",     ctrl.verifyAdminOTP);
+// User auth
+router.post("/user/register", authController.userRegister);
+router.post("/user/login", authController.userLogin);
 
-// ── User ─────────────────────────────────────────────────────
-router.post("/user/register",        ctrl.userRegister);
-router.post("/user/verify-email",    ctrl.verifyEmail);
-router.post("/user/resend-otp",      ctrl.resendOTP);
-router.post("/user/login",           ctrl.userLogin);
+// Admin auth
+router.post("/admin/register", authController.adminRegister);
+router.post("/admin/login", authController.adminLogin);
 
-// ── Forgot / Reset password ──────────────────────────────────
-router.post("/forgot-password",      ctrl.forgotPassword);
-router.post("/reset-password",       ctrl.resetPassword);
+// Common
+router.get("/me", verifyToken, authController.getMe);
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/reset-password", authController.resetPassword);
+router.put("/wallet", verifyToken, authController.updateWallet);
+router.put("/change-password", verifyToken, authController.changePassword);
 
 module.exports = router;

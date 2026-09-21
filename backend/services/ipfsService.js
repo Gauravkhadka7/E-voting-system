@@ -1,114 +1,103 @@
+const fs = require("fs");
+const path = require("path");
+
+// Local IPFS DB fallback (for development without IPFS daemon)
+const DB_PATH = path.join(__dirname, "../db/index.json");
+const IPFS_DIR = path.join(__dirname, "../db");
+
+// Ensure DB directory exists
+if (!fs.existsSync(IPFS_DIR)) fs.mkdirSync(IPFS_DIR, { recursive: true });
+
+// Load or initialize index
+function loadIndex() {
+  try {
+    if (fs.existsSync(DB_PATH)) {
+      return JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
+    }
+  } catch {}
+  return {};
+}
+
+function saveIndex(index) {
+  fs.writeFileSync(DB_PATH, JSON.stringify(index, null, 2));
+}
+
 /**
- * IPFS Service — BlockVote
- * Handles all IPFS uploads: candidate images, voter ID docs, vote audit logs
- * Uses Helia (modern IPFS) with fallback to Pinata HTTP API
+ * Upload data to IPFS (tries real IPFS first, falls back to local)
  */
-
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
-const FormData = require('form-data');
-
-// ═══════════════════════════════════════════════════════════
-// Pinata API (recommended for production — free tier available)
-// Set PINATA_API_KEY and PINATA_SECRET in .env
-// ═══════════════════════════════════════════════════════════
-
-const PINATA_KEY    = process.env.PINATA_API_KEY;
-const PINATA_SECRET = process.env.PINATA_SECRET;
-const USE_PINATA    = !!(PINATA_KEY && PINATA_SECRET);
-
-// ── Upload file to IPFS ─────────────────────────────────────
-/**
- * Uploads a file (image or document) to IPFS
- * @param {string} filePath - Local file system path
- * @param {string} fileName - Original file name
- * @returns {string} IPFS CID
- */
-async function uploadToIPFS(filePath, fileName) {
-  if (USE_PINATA) {
-    return uploadFileToPinata(filePath, fileName);
+async function uploadToIPFS(data) {
+  let content;
+  if (typeof data === "string") {
+    content = data;
+  } else {
+    content = JSON.stringify(data);
   }
-  // Fallback: simulate CID (replace with local IPFS node in production)
-  return simulateCID(filePath);
-}
 
-// ── Upload JSON to IPFS ─────────────────────────────────────
-/**
- * Uploads a JSON object to IPFS (for vote audit logs, metadata)
- * @param {object} data - JSON data
- * @param {string} fileName - e.g. "vote-audit-12345.json"
- * @returns {string} IPFS CID
- */
-async function uploadJSONToIPFS(data, fileName = 'data.json') {
-  if (USE_PINATA) {
-    return uploadJSONToPinata(data, fileName);
+  try {
+    // Try real IPFS via kubo-rpc-client
+    const { create } = await import("kubo-rpc-client");
+    const client = create({
+      host: process.env.IPFS_HOST || "localhost",
+      port: parseInt(process.env.IPFS_PORT || "5001"),
+      protocol: process.env.IPFS_PROTOCOL || "http",
+    });
+
+    const result = await client.add(content, { pin: true });
+    const cid = result.cid.toString();
+    console.log("✅ Uploaded to IPFS:", cid);
+    return cid;
+  } catch (err) {
+    console.warn("⚠️  IPFS unavailable, using local fallback:", err.message);
+    return localStore(content);
   }
-  return simulateCID(JSON.stringify(data));
 }
 
-// ── Pinata File Upload ──────────────────────────────────────
-async function uploadFileToPinata(filePath, fileName) {
-  const formData = new FormData();
-  formData.append('file', fs.createReadStream(filePath), { filename: fileName });
-  formData.append('pinataMetadata', JSON.stringify({ name: fileName }));
-  formData.append('pinataOptions',  JSON.stringify({ cidVersion: 1 }));
+/**
+ * Local storage fallback — simulates IPFS CID
+ */
+function localStore(content) {
+  const crypto = require("crypto");
+  const cid = "Qm" + crypto.createHash("sha256").update(content).digest("hex").slice(0, 44);
 
-  const res = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
-    maxBodyLength: Infinity,
-    headers: {
-      ...formData.getHeaders(),
-      pinata_api_key:        PINATA_KEY,
-      pinata_secret_api_key: PINATA_SECRET,
-    },
-  });
-  return res.data.IpfsHash;
+  const index = loadIndex();
+  index[cid] = { content, storedAt: new Date().toISOString() };
+  saveIndex(index);
+
+  const filePath = path.join(IPFS_DIR, `${cid}.json`);
+  fs.writeFileSync(filePath, JSON.stringify({ cid, content, storedAt: new Date().toISOString() }));
+
+  return cid;
 }
 
-// ── Pinata JSON Upload ──────────────────────────────────────
-async function uploadJSONToPinata(data, fileName) {
-  const res = await axios.post('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
-    pinataContent:  data,
-    pinataMetadata: { name: fileName },
-    pinataOptions:  { cidVersion: 1 },
-  }, {
-    headers: {
-      'Content-Type':        'application/json',
-      pinata_api_key:        PINATA_KEY,
-      pinata_secret_api_key: PINATA_SECRET,
-    },
-  });
-  return res.data.IpfsHash;
-}
-
-// ── Simulate CID (dev/demo fallback) ───────────────────────
-function simulateCID(input) {
-  // Deterministic-ish fake CID for demo purposes
-  const hash = Buffer.from(String(input).slice(0, 32)).toString('hex');
-  return `Qm${hash.slice(0, 44)}`;
-}
-
-// ── Get IPFS gateway URL ────────────────────────────────────
-function getIPFSUrl(cid) {
-  if (!cid) return '';
-  // Try multiple gateways for reliability
-  return `https://ipfs.io/ipfs/${cid}`;
-}
-
-// ── Get IPFS content ────────────────────────────────────────
+/**
+ * Retrieve data from IPFS by CID
+ */
 async function getFromIPFS(cid) {
-  const gateways = [
-    `https://ipfs.io/ipfs/${cid}`,
-    `https://cloudflare-ipfs.com/ipfs/${cid}`,
-    `https://gateway.pinata.cloud/ipfs/${cid}`,
-  ];
-  for (const url of gateways) {
-    try {
-      const res = await axios.get(url, { timeout: 5000 });
-      return res.data;
-    } catch { /* try next */ }
+  try {
+    const { create } = await import("kubo-rpc-client");
+    const client = create({
+      host: process.env.IPFS_HOST || "localhost",
+      port: parseInt(process.env.IPFS_PORT || "5001"),
+      protocol: process.env.IPFS_PROTOCOL || "http",
+    });
+
+    const chunks = [];
+    for await (const chunk of client.cat(cid)) {
+      chunks.push(chunk);
+    }
+    return Buffer.concat(chunks).toString();
+  } catch {
+    // Fallback to local
+    const index = loadIndex();
+    if (index[cid]) return index[cid].content;
+
+    const filePath = path.join(IPFS_DIR, `${cid}.json`);
+    if (fs.existsSync(filePath)) {
+      const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+      return data.content;
+    }
+    return null;
   }
-  throw new Error('Could not fetch from IPFS');
 }
 
-module.exports = { uploadToIPFS, uploadJSONToIPFS, getIPFSUrl, getFromIPFS };
+module.exports = { uploadToIPFS, getFromIPFS };

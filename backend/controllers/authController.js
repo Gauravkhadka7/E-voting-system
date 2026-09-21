@@ -1,255 +1,331 @@
-"use strict";
-
-const jwt    = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
 const crypto = require("crypto");
-const db     = require("../services/ipfsDB");
-const { sendUserVerification, sendAdminOTP, sendPasswordReset, verifyOTP, verifyAdminOTP: verifyAdminCode } = require("../services/emailService");
+const pool = require("../db");
+const { sendEmail, templates } = require("../services/emailService");
 
-const JWT_SECRET = process.env.JWT_SECRET || "blockvote_secret_2024";
-const ADMIN_USER = process.env.ADMIN_USERNAME || "admin";
-const ADMIN_PASS = process.env.ADMIN_PASSWORD || "admin123";
+function generateToken(payload, expiresIn = "7d") {
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn });
+}
 
-// ── ADMIN ROLES ──────────────────────────────────────────────
-// Super admin can do everything
-// election_manager: create/update elections
-// candidate_manager: add/update candidates
-// viewer: read only
-const ADMIN_PERMISSIONS = {
-  super_admin:       ["create_election","update_election","delete_election","add_candidate","delete_candidate","view_all","manage_users","manage_roles"],
-  election_manager:  ["create_election","update_election","view_all"],
-  candidate_manager: ["add_candidate","update_candidate","delete_candidate","view_all"],
-  viewer:            ["view_all"],
-};
-
-// ── Admin Login ──────────────────────────────────────────────
-exports.adminLogin = async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    if (!username || !password) return res.status(400).json({ message: "Username and password required" });
-
-    const u = username.trim(), p = password.trim();
-    console.log(`[ADMIN LOGIN] attempt: "${u}"`);
-
-    // Check environment super-admin
-    if (u === ADMIN_USER && p === ADMIN_PASS) {
-      const token = jwt.sign({ role: "admin", adminRole: "super_admin", username: u, permissions: ADMIN_PERMISSIONS.super_admin }, JWT_SECRET, { expiresIn: "8h" });
-      console.log("[ADMIN LOGIN] ✅ super-admin");
-      return res.json({ token, admin: { username: u, role: "admin", adminRole: "super_admin", permissions: ADMIN_PERMISSIONS.super_admin } });
-    }
-
-    // Check registered admins in DB
-    const adminUser = await db.findOne("admins", a => a.username === u || a.email === u);
-    if (adminUser) {
-      const valid = await bcrypt.compare(p, adminUser.password);
-      if (!valid) return res.status(401).json({ message: "Invalid password" });
-      const token = jwt.sign({
-        role: "admin", adminRole: adminUser.adminRole || "viewer",
-        username: adminUser.username, adminId: adminUser._id,
-        permissions: ADMIN_PERMISSIONS[adminUser.adminRole] || ADMIN_PERMISSIONS.viewer,
-      }, JWT_SECRET, { expiresIn: "8h" });
-      return res.json({ token, admin: { username: adminUser.username, adminRole: adminUser.adminRole, permissions: ADMIN_PERMISSIONS[adminUser.adminRole] || [] } });
-    }
-
-    console.log(`[ADMIN LOGIN] ❌ not found. Use "${ADMIN_USER}" / "${ADMIN_PASS}"`);
-    return res.status(401).json({ message: `Invalid credentials. Default admin: ${ADMIN_USER} / ${ADMIN_PASS}` });
-  } catch (err) {
-    console.error("[ADMIN LOGIN] error:", err);
-    res.status(500).json({ message: "Server error: " + err.message });
-  }
-};
-
-// ── Admin Register (create sub-admins) ──────────────────────
-exports.adminRegister = async (req, res) => {
-  try {
-    const { username, email, password, adminRole } = req.body;
-    if (!username || !email || !password) return res.status(400).json({ message: "Username, email and password required" });
-
-    const validRoles = Object.keys(ADMIN_PERMISSIONS);
-    const role = validRoles.includes(adminRole) ? adminRole : "viewer";
-
-    const existing = await db.findOne("admins", a => a.email === email.toLowerCase());
-    if (existing) return res.status(409).json({ message: "Admin email already exists" });
-
-    const hash = await bcrypt.hash(password, 10);
-    const admin = await db.insert("admins", {
-      username: username.trim(),
-      email:    email.toLowerCase(),
-      password: hash,
-      adminRole: role,
-      permissions: ADMIN_PERMISSIONS[role],
-    });
-    res.status(201).json({ message: "Admin created", adminId: admin._id, adminRole: role, permissions: ADMIN_PERMISSIONS[role] });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// ── Request admin OTP ────────────────────────────────────────
-exports.requestAdminOTP = async (req, res) => {
-  try {
-    const code = await sendAdminOTP(req.body.action || "Admin Action", req.body.details || "");
-    res.json({ message: process.env.EMAIL_USER ? "Code sent to admin email" : `Dev code: ${code}`, devCode: !process.env.EMAIL_USER ? code : undefined });
-  } catch (err) { res.status(500).json({ message: err.message }); }
-};
-
-exports.verifyAdminOTP = async (req, res) => {
-  const result = verifyAdminCode(req.body.code);
-  if (!result.valid) return res.status(400).json({ message: result.reason });
-  res.json({ valid: true });
-};
-
-// ── User Register ────────────────────────────────────────────
+// ─── USER REGISTER ────────────────────────────────────────────────────────────
 exports.userRegister = async (req, res) => {
+  const conn = await pool.getConnection();
   try {
-    const { name, email, password, phone } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ message: "Name, email and password are required" });
+    const {
+      name, email, password, primary_role = "PUBLIC",
+      user_roles, gender, district, municipality, province,
+      // Student
+      institution_name, class: cls, section, roll_number, batch, institution_id,
+      // Employee
+      company_name, company_id, branch, job_role,
+      // Public
+      citizenship_number, ward_number,
+      custom_fields = {},
+    } = req.body;
 
-    const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRx.test(email)) return res.status(400).json({ message: "Invalid email format" });
-    if (password.length < 6)  return res.status(400).json({ message: "Password must be at least 6 characters" });
-
-    const normEmail = email.toLowerCase().trim();
-    const existing  = await db.findOne("users", u => u.email === normEmail);
-    if (existing && existing.verified) return res.status(409).json({ message: "Email already registered. Please sign in." });
-
-    const hash = await bcrypt.hash(password, 10);
-    const autoVerify = !process.env.EMAIL_USER;
-
-    let userId;
-    if (existing && !existing.verified) {
-      const upd = await db.update("users", existing._id, { name: name.trim(), password: hash, phone: phone||"", verified: autoVerify });
-      userId = upd._id;
-    } else {
-      const user = await db.insert("users", {
-        name: name.trim(), email: normEmail, password: hash, phone: phone||"",
-        isRegistered: false, hasVoted: false, walletAddress: "", verified: autoVerify,
-        userRole: "voter",
-        assignedElections: [], // which elections this user can vote in
-        permissions: ["view_elections","vote"],
-      });
-      userId = user._id;
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: "Name, email, and password are required" });
     }
 
-    if (!autoVerify) {
-      try { await sendUserVerification(email, name); } catch (e) { console.warn("OTP email:", e.message); }
-      return res.status(201).json({ message: `Verification code sent to ${email}`, userId, requiresVerification: true });
+    const [existing] = await conn.execute("SELECT id FROM users WHERE email = ?", [email]);
+    if (existing.length) {
+      return res.status(409).json({ success: false, message: "Email already registered" });
     }
-    const code = await sendUserVerification(email, name);
-    return res.status(201).json({ message: "Account created! You can now sign in.", userId, requiresVerification: false, devCode: code });
+
+    const hashed = await bcrypt.hash(password, 12);
+    const id = uuidv4();
+    const roles = user_roles
+      ? (Array.isArray(user_roles) ? user_roles : [user_roles])
+      : [primary_role];
+
+    await conn.execute(
+      `INSERT INTO users (
+        id, name, email, password, user_roles, primary_role, gender,
+        institution_name, class, section, roll_number, batch, institution_id,
+        company_name, company_id, branch, job_role,
+        citizenship_number, ward_number,
+        district, municipality, province, custom_fields
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id, name, email, hashed,
+        JSON.stringify(roles), primary_role, gender || null,
+        institution_name || null, cls || null, section || null, roll_number || null, batch || null, institution_id || null,
+        company_name || null, company_id || null, branch || null, job_role || null,
+        citizenship_number || null, ward_number || null,
+        district || null, municipality || null, province || null,
+        JSON.stringify(custom_fields),
+      ]
+    );
+
+    // Send welcome email (non-blocking)
+    const tmpl = templates.welcome(name);
+    sendEmail({ to: email, subject: tmpl.subject, html: tmpl.html }).catch(() => {});
+
+    const token = generateToken({ id, isAdmin: false });
+
+    res.status(201).json({
+      success: true,
+      message: "Registration successful. Please wait for admin verification.",
+      token,
+      user: { id, name, email, primary_role, user_roles: roles, is_verified: false },
+    });
   } catch (err) {
-    console.error("[REGISTER]", err);
-    res.status(500).json({ message: "Registration failed: " + err.message });
+    console.error("userRegister error:", err);
+    res.status(500).json({ success: false, message: "Registration failed" });
+  } finally {
+    conn.release();
   }
 };
 
-exports.verifyEmail = async (req, res) => {
-  try {
-    const { email, code } = req.body;
-    const result = verifyOTP(email, code);
-    if (!result.valid) return res.status(400).json({ message: result.reason });
-    const user = await db.findOne("users", u => u.email === email.toLowerCase().trim());
-    if (!user) return res.status(404).json({ message: "Account not found" });
-    await db.update("users", user._id, { verified: true });
-    res.json({ message: "✅ Email verified! You can now sign in.", verified: true });
-  } catch (err) { res.status(500).json({ message: err.message }); }
-};
-
-exports.resendOTP = async (req, res) => {
-  try {
-    const { email } = req.body;
-    const user = await db.findOne("users", u => u.email === email.toLowerCase().trim());
-    if (!user) return res.status(404).json({ message: "No account found" });
-    if (user.verified) return res.json({ message: "Already verified. Please sign in." });
-    const code = await sendUserVerification(email, user.name);
-    res.json({ message: process.env.EMAIL_USER ? `Code sent to ${email}` : `Dev code: ${code}`, devCode: !process.env.EMAIL_USER ? code : undefined });
-  } catch (err) { res.status(500).json({ message: err.message }); }
-};
-
-// ── User Login ───────────────────────────────────────────────
+// ─── USER LOGIN ───────────────────────────────────────────────────────────────
 exports.userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: "Email and password required" });
-
-    const normEmail = email.toLowerCase().trim();
-    console.log(`[LOGIN] ${normEmail}`);
-
-    const user = await db.findOne("users", u => u.email === normEmail);
-    if (!user) return res.status(401).json({ message: "No account found. Please sign up first." });
-
-    console.log(`[LOGIN] found user ${user._id} | verified:${user.verified} | hasPwd:${!!user.password}`);
-
-    if (!user.verified && process.env.EMAIL_USER) {
-      return res.status(403).json({ message: "Please verify your email first.", needsVerification: true, email });
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Email and password required" });
     }
-    if (!user.password) return res.status(500).json({ message: "Account error. Please register again." });
 
-    const valid = await bcrypt.compare(password.trim(), user.password);
-    console.log(`[LOGIN] password match: ${valid}`);
-    if (!valid) return res.status(401).json({ message: "Incorrect password." });
+    const [rows] = await pool.execute(
+      "SELECT * FROM users WHERE email = ? AND is_active = TRUE",
+      [email]
+    );
+    if (!rows.length) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
 
-    const token = jwt.sign({ userId: user._id, role: "user", userRole: user.userRole||"voter", permissions: user.permissions||[] }, JWT_SECRET, { expiresIn: "24h" });
-    console.log(`[LOGIN] ✅ success`);
+    const user = rows[0];
+    if (!user.password) {
+      return res.status(401).json({ success: false, message: "Please use OAuth to login" });
+    }
+
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    const token = generateToken({ id: user.id, isAdmin: false });
+    const userRoles = typeof user.user_roles === "string" ? JSON.parse(user.user_roles) : user.user_roles;
+
     res.json({
+      success: true,
       token,
-      user: { _id: user._id, name: user.name, email: user.email, phone: user.phone||"", isRegistered: user.isRegistered||false, hasVoted: user.hasVoted||false, walletAddress: user.walletAddress||"", userRole: user.userRole||"voter", permissions: user.permissions||[] },
+      user: {
+        id: user.id, name: user.name, email: user.email,
+        primary_role: user.primary_role, user_roles: userRoles,
+        is_verified: user.is_verified, wallet_address: user.wallet_address,
+      },
     });
   } catch (err) {
-    console.error("[LOGIN]", err);
-    res.status(500).json({ message: "Login failed: " + err.message });
+    console.error("userLogin error:", err);
+    res.status(500).json({ success: false, message: "Login failed" });
   }
 };
 
-// ── Forgot Password — Step 1: request reset ─────────────────
-exports.forgotPassword = async (req, res) => {
+// ─── ADMIN REGISTER ───────────────────────────────────────────────────────────
+exports.adminRegister = async (req, res) => {
   try {
-    const { email, userType } = req.body; // userType: "user" | "admin"
-    if (!email) return res.status(400).json({ message: "Email required" });
+    const { name, email, password, secret } = req.body;
 
-    const normEmail = email.toLowerCase().trim();
-    const collection = userType === "admin" ? "admins" : "users";
-    const record = await db.findOne(collection, r => r.email === normEmail);
-
-    // Always respond success to prevent email enumeration
-    const successMsg = `If an account exists for ${email}, a reset link has been sent.`;
-
-    if (!record) return res.json({ message: successMsg });
-
-    // Generate secure reset token
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetExpiry = Date.now() + 30 * 60 * 1000; // 30 min
-
-    await db.update(collection, record._id, { resetToken, resetExpiry });
-
-    try {
-      await sendPasswordReset(normEmail, record.name || record.username, resetToken, userType || "user");
-    } catch (e) {
-      console.warn("Password reset email failed:", e.message);
-      // In dev mode, return token directly
-      if (!process.env.EMAIL_USER) return res.json({ message: successMsg, devToken: resetToken });
+    if (secret !== process.env.ADMIN_REGISTRATION_SECRET) {
+      return res.status(403).json({ success: false, message: "Invalid registration secret" });
     }
 
-    res.json({ message: successMsg });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    const [existing] = await pool.execute("SELECT id FROM admins WHERE email = ?", [email]);
+    if (existing.length) {
+      return res.status(409).json({ success: false, message: "Admin email already exists" });
+    }
+
+    const hashed = await bcrypt.hash(password, 12);
+    const id = uuidv4();
+
+    await pool.execute(
+      "INSERT INTO admins (id, name, email, password) VALUES (?, ?, ?, ?)",
+      [id, name, email, hashed]
+    );
+
+    const token = generateToken({ id, isAdmin: true });
+    res.status(201).json({
+      success: true,
+      message: "Admin registered successfully",
+      token,
+      admin: { id, name, email, role: "ADMIN" },
+    });
+  } catch (err) {
+    console.error("adminRegister error:", err);
+    res.status(500).json({ success: false, message: "Admin registration failed" });
+  }
 };
 
-// ── Forgot Password — Step 2: reset with token ──────────────
+// ─── ADMIN LOGIN ──────────────────────────────────────────────────────────────
+exports.adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Email and password required" });
+    }
+
+    const [rows] = await pool.execute(
+      "SELECT * FROM admins WHERE email = ? AND is_active = TRUE",
+      [email]
+    );
+    if (!rows.length) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    const admin = rows[0];
+    const valid = await bcrypt.compare(password, admin.password);
+    if (!valid) {
+      return res.status(401).json({ success: false, message: "Invalid credentials" });
+    }
+
+    const token = generateToken({ id: admin.id, isAdmin: true });
+    res.json({
+      success: true,
+      token,
+      admin: { id: admin.id, name: admin.name, email: admin.email, role: admin.role },
+    });
+  } catch (err) {
+    console.error("adminLogin error:", err);
+    res.status(500).json({ success: false, message: "Login failed" });
+  }
+};
+
+// ─── GET CURRENT USER ─────────────────────────────────────────────────────────
+exports.getMe = async (req, res) => {
+  try {
+    if (req.user.isAdmin) {
+      const [rows] = await pool.execute(
+        "SELECT id, name, email, role, is_active, created_at FROM admins WHERE id = ?",
+        [req.user.id]
+      );
+      return res.json({ success: true, user: { ...rows[0], isAdmin: true } });
+    }
+
+    const [rows] = await pool.execute(
+      `SELECT id, name, email, user_roles, primary_role, gender, photo_url, photo_cid,
+       is_verified, wallet_address, institution_name, class, section, roll_number, batch,
+       company_name, company_id, branch, job_role, citizenship_number, ward_number,
+       district, municipality, province, custom_fields, created_at
+       FROM users WHERE id = ?`,
+      [req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ success: false, message: "User not found" });
+
+    const user = rows[0];
+    user.user_roles = typeof user.user_roles === "string" ? JSON.parse(user.user_roles) : user.user_roles;
+    user.custom_fields = typeof user.custom_fields === "string" ? JSON.parse(user.custom_fields) : user.custom_fields;
+
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error("getMe error:", err);
+    res.status(500).json({ success: false, message: "Failed to get profile" });
+  }
+};
+
+// ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email, isAdmin = false } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: "Email required" });
+
+    const table = isAdmin ? "admins" : "users";
+    const [rows] = await pool.execute(`SELECT id, name FROM ${table} WHERE email = ?`, [email]);
+
+    if (!rows.length) {
+      // Don't reveal if email exists
+      return res.json({ success: true, message: "If the email exists, a reset link has been sent." });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiry = new Date(Date.now() + 3600000); // 1 hour
+
+    await pool.execute(
+      `UPDATE ${table} SET reset_token = ?, reset_token_expiry = ? WHERE id = ?`,
+      [token, expiry, rows[0].id]
+    );
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}&type=${isAdmin ? "admin" : "user"}`;
+    const tmpl = templates.passwordReset(rows[0].name, resetUrl);
+    await sendEmail({ to: email, subject: tmpl.subject, html: tmpl.html });
+
+    res.json({ success: true, message: "If the email exists, a reset link has been sent." });
+  } catch (err) {
+    console.error("forgotPassword error:", err);
+    res.status(500).json({ success: false, message: "Failed to process request" });
+  }
+};
+
+// ─── RESET PASSWORD ───────────────────────────────────────────────────────────
 exports.resetPassword = async (req, res) => {
   try {
-    const { token, password, userType } = req.body;
-    if (!token || !password) return res.status(400).json({ message: "Token and new password required" });
-    if (password.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
+    const { token, password, type = "user" } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ success: false, message: "Token and password required" });
+    }
 
-    const collection = userType === "admin" ? "admins" : "users";
-    const record = await db.findOne(collection, r => r.resetToken === token);
+    const table = type === "admin" ? "admins" : "users";
+    const [rows] = await pool.execute(
+      `SELECT id FROM ${table} WHERE reset_token = ? AND reset_token_expiry > NOW()`,
+      [token]
+    );
 
-    if (!record) return res.status(400).json({ message: "Invalid or expired reset token" });
-    if (Date.now() > record.resetExpiry) return res.status(400).json({ message: "Reset token expired. Request a new one." });
+    if (!rows.length) {
+      return res.status(400).json({ success: false, message: "Invalid or expired token" });
+    }
 
-    const hash = await bcrypt.hash(password, 10);
-    await db.update(collection, record._id, { password: hash, resetToken: null, resetExpiry: null, verified: true });
+    const hashed = await bcrypt.hash(password, 12);
+    await pool.execute(
+      `UPDATE ${table} SET password = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?`,
+      [hashed, rows[0].id]
+    );
 
-    res.json({ message: "✅ Password reset successful! You can now sign in." });
-  } catch (err) { res.status(500).json({ message: err.message }); }
+    res.json({ success: true, message: "Password reset successfully" });
+  } catch (err) {
+    console.error("resetPassword error:", err);
+    res.status(500).json({ success: false, message: "Password reset failed" });
+  }
+};
+
+// ─── UPDATE WALLET ────────────────────────────────────────────────────────────
+exports.updateWallet = async (req, res) => {
+  try {
+    const { wallet_address } = req.body;
+    if (!wallet_address) {
+      return res.status(400).json({ success: false, message: "Wallet address required" });
+    }
+
+    await pool.execute("UPDATE users SET wallet_address = ? WHERE id = ?", [
+      wallet_address,
+      req.user.id,
+    ]);
+
+    res.json({ success: true, message: "Wallet address updated" });
+  } catch (err) {
+    console.error("updateWallet error:", err);
+    res.status(500).json({ success: false, message: "Failed to update wallet" });
+  }
+};
+
+// ─── CHANGE PASSWORD ──────────────────────────────────────────────────────────
+exports.changePassword = async (req, res) => {
+  try {
+    const { current_password, new_password } = req.body;
+    const table = req.user.isAdmin ? "admins" : "users";
+
+    const [rows] = await pool.execute(`SELECT password FROM ${table} WHERE id = ?`, [req.user.id]);
+    if (!rows.length) return res.status(404).json({ success: false, message: "User not found" });
+
+    const valid = await bcrypt.compare(current_password, rows[0].password);
+    if (!valid) return res.status(400).json({ success: false, message: "Current password incorrect" });
+
+    const hashed = await bcrypt.hash(new_password, 12);
+    await pool.execute(`UPDATE ${table} SET password = ? WHERE id = ?`, [hashed, req.user.id]);
+
+    res.json({ success: true, message: "Password changed successfully" });
+  } catch (err) {
+    console.error("changePassword error:", err);
+    res.status(500).json({ success: false, message: "Failed to change password" });
+  }
 };

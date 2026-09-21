@@ -1,75 +1,115 @@
-const express    = require('express');
-const cors       = require('cors');
-const dotenv     = require('dotenv');
-const path       = require('path');
-const multer     = require('multer');
-const fs         = require('fs');
-const nodemailer = require('nodemailer');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const rateLimit = require("express-rate-limit");
 
-dotenv.config();
+// Route imports
+const authRoutes = require("./routes/authRoutes");
+const oauthRoutes = require("./routes/oauthRoutes");
+const electionRoutes = require("./routes/electionRoutes");
+const candidateRoutes = require("./routes/candidateRoutes");
+const voterRoutes = require("./routes/voterRoutes");
+const voteRoutes = require("./routes/voteRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const feedbackRoutes = require("./routes/feedbackRoutes");
 
 const app = express();
-// Allow React dev server :3000 and direct requests
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'http://localhost:5000',
-  process.env.CLIENT_URL,
-].filter(Boolean);
 
-app.use(cors({
-  origin: (origin, cb) => {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-    cb(null, true); // permissive in dev — tighten in production
-  },
-  credentials: true,
-  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
-}));
-app.options('*', cors()); // Handle preflight for all routes
-app.use(express.json({ limit: '20mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+app.use(
+  cors({
+    origin: [
+      process.env.FRONTEND_URL || "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:5174",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-['uploads/candidates', 'uploads/voter-docs', 'db'].forEach(d => {
-  if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
+// ─── BODY PARSING ─────────────────────────────────────────────────────────────
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+// ─── STATIC FILES ─────────────────────────────────────────────────────────────
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// ─── RATE LIMITING ────────────────────────────────────────────────────────────
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many requests, please try again later." },
 });
 
-const db = require('./services/ipfsDB');
-console.log('✅ IPFS DB initialized');
-console.log(`   Users:${db.count('users')} | Elections:${db.count('elections')} | Candidates:${db.count('candidates')} | Votes:${db.count('votes')}`);
-console.log(`   Pinata: ${process.env.PINATA_API_KEY ? '✅' : '⚠ dev mode'}`);
-console.log(`   Email:  ${process.env.EMAIL_USER ? '✅ ' + process.env.EMAIL_USER : '⚠ not configured (OTP printed to console)'}`);
-
-app.use('/api/auth',       require('./routes/authRoutes'));
-app.use('/api/elections',  require('./routes/electionRoutes'));
-app.use('/api/candidates', require('./routes/candidateRoutes'));
-app.use('/api/voter',      require('./routes/voterRoutes'));
-app.use('/api/vote',       require('./routes/voteRoutes'));
-app.use('/api/admin',      require('./routes/adminRoutes'));
-
-app.get('/api/health', (req, res) => res.json({
-  status: 'ok', database: 'IPFS',
-  pinata: !!process.env.PINATA_API_KEY,
-  email:  !!process.env.EMAIL_USER,
-  counts: { users: db.count('users'), elections: db.count('elections'), candidates: db.count('candidates'), votes: db.count('votes') },
-}));
-
-app.get('/api/ipfs/snapshot', async (req, res) => {
-  try { const cid = await db.pinIndex(); res.json({ cid, url: db.ipfsUrl(cid) }); }
-  catch (err) { res.status(500).json({ message: err.message }); }
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { success: false, message: "Too many login attempts, please try again later." },
 });
 
-app.get('/api/ipfs/cids/:collection', (req, res) => {
-  res.json({ collection: req.params.collection, cids: db.getCIDs(req.params.collection) });
+app.use(limiter);
+
+// ─── ROUTES ───────────────────────────────────────────────────────────────────
+app.use("/api/auth", authLimiter, authRoutes);
+app.use("/api/oauth", oauthRoutes);
+app.use("/api/elections", electionRoutes);
+app.use("/api/candidates", candidateRoutes);
+app.use("/api/voters", voterRoutes);
+app.use("/api/votes", voteRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/feedback", feedbackRoutes);
+
+// ─── HEALTH CHECK ─────────────────────────────────────────────────────────────
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Blockchain E-Voting API is running",
+    timestamp: new Date().toISOString(),
+    version: "1.0.0",
+  });
 });
 
+// ─── 404 HANDLER ──────────────────────────────────────────────────────────────
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.method} ${req.originalUrl} not found`,
+  });
+});
+
+// ─── GLOBAL ERROR HANDLER ─────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  if (err instanceof multer.MulterError)
-    return res.status(400).json({ message: `Upload error: ${err.message}` });
-  res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
+  console.error("❌ Global Error:", err);
+
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(400).json({ success: false, message: "File too large" });
+  }
+
+  if (err.name === "JsonWebTokenError") {
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
+
+  if (err.name === "TokenExpiredError") {
+    return res.status(401).json({ success: false, message: "Token expired" });
+  }
+
+  res.status(err.status || 500).json({
+    success: false,
+    message: err.message || "Internal server error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+  });
 });
 
+// ─── START ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 BlockVote API → http://localhost:${PORT} | DB: IPFS`));
+app.listen(PORT, () => {
+  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`🌐 Environment: ${process.env.NODE_ENV}`);
+});
+
+module.exports = app;

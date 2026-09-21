@@ -1,3 +1,4 @@
+
 {
   "users": [
     {
@@ -237,6 +238,16 @@
         "status": "approved"
       },
       "created": "2026-04-19T09:58:55.449Z"
+    },
+    {
+      "id": "52ff0ff8-50af-47e9-941d-11b0be81c1d8",
+      "cid": "QmDev52ff0ff850af47e9941d11b0be81c1d8",
+      "preview": {
+        "userId": "demo",
+        "walletAddress": "0xf54e3de5b30c415f067c149c71099b90747c5167",
+        "status": "approved"
+      },
+      "created": "2026-05-03T12:35:54.212Z"
     }
   ],
   "votes": [

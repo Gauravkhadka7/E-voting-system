@@ -1,0 +1,14 @@
+{
+  "name": "Gaurav Khadka",
+  "email": "gauravkhadka6677@gmail.com",
+  "password": "$2a$10$dNTiqYzkp8Y1UGA2KdcgGOO0y43GeIIk92oboCetganJrDg8yaAde",
+  "phone": "+19762569703",
+  "isRegistered": true,
+  "hasVoted": false,
+  "walletAddress": "0xf54e3de5b30c415f067c149c71099b90747c5167",
+  "verified": true,
+  "_id": "670ecd84-d44e-4bbf-9ae9-3bbdfe87a339",
+  "_type": "users",
+  "_created": "2026-04-19T09:21:37.595Z",
+  "_updated": "2026-04-19T09:22:44.906Z"
+}

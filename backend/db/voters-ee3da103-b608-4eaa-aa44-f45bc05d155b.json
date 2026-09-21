@@ -1,0 +1,20 @@
+{
+  "userId": "670ecd84-d44e-4bbf-9ae9-3bbdfe87a339",
+  "dob": "2000-02-01",
+  "gender": "Male",
+  "address": "Dudilabhati-1, Galkot",
+  "city": "Galkot",
+  "state": "",
+  "pincode": "",
+  "idType": "national_id",
+  "idNumber": "13121",
+  "walletAddress": "0xf54e3de5b30c415f067c149c71099b90747c5167",
+  "docUrl": "",
+  "docCid": "",
+  "docIpfsUrl": "",
+  "status": "approved",
+  "_id": "ee3da103-b608-4eaa-aa44-f45bc05d155b",
+  "_type": "voters",
+  "_created": "2026-04-19T09:22:43.310Z",
+  "_updated": "2026-04-19T09:22:43.310Z"
+}
